@@ -1,0 +1,29 @@
+﻿Быстрый запуск проекта
+Клонировать репозиторий.
+Открыть Unity Hub.
+Нажать Add.
+Выбрать папку проекта.
+Открыть проект в последней стабильной версии Unity.
+
+Открыть сцену:
+Assets/Scenes/Room_01.unity
+
+
+Проверить настройку Input:
+Edit → Project Settings → Player → Other Settings → Active Input Handling
+
+Должно быть:
+
+Both
+
+или:
+
+Input Manager (Old)
+
+
+Нажать Play.
+Управление
+WASD — движение игрока
+E — взаимодействие с объектами
+Mouse Drag — перетаскивание элементов
+Escape — закрыть стол крафта

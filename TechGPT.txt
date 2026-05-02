@@ -1,0 +1,417 @@
+﻿Главные системы
+
+Inventory
+
+Объект:
+
+GameSystems/Inventory
+
+Компонент:
+
+Inventory
+
+Назначение:
+
+хранит инвентарь игрока;
+инвентарь ограничен 5 слотами;
+один слот хранит только один элемент;
+элементы не стакаются;
+одинаковые элементы могут занимать разные слоты.
+InventoryUI
+
+Объект:
+
+UI/Canvas/InventoryPanel
+
+Компонент:
+
+InventoryUI
+
+Назначение:
+
+отображает 5 слотов инвентаря;
+обновляется при изменении Inventory;
+позволяет перетаскивать элементы на стол;
+позволяет возвращать элементы со стола обратно в пустой слот.
+CraftingSystem
+
+Объект:
+
+GameSystems/CraftingSystem
+
+Компонент:
+
+CraftingSystem
+
+Назначение:
+
+хранит рецепты;
+выполняет крафт;
+использует Dictionary;
+не использует if/else для комбинаций;
+учитывает roomId, поэтому одинаковые элементы могут давать разные результаты в разных комнатах.
+SceneInstaller
+
+Объект:
+
+GameSystems/SceneInstaller
+
+Компонент:
+
+SceneInstaller
+
+Назначение:
+
+связывает уже существующие объекты сцены;
+ничего не создаёт;
+настраивает InventoryUI;
+настраивает столы крафта;
+передаёт рецепты в CraftingSystem.
+
+В Inspector у SceneInstaller должны быть заполнены поля:
+
+Inventory = GameSystems/Inventory
+Crafting System = GameSystems/CraftingSystem
+Root Canvas = UI/Canvas
+Inventory UI = UI/Canvas/InventoryPanel
+ElementSourceInteractable
+
+Используется на объектах-источниках элементов.
+
+Примеры:
+
+Furnace → Fire
+Wall → Stone
+ClayButton → Clay
+
+Компонент:
+
+ElementSourceInteractable
+
+Поля:
+
+Element Id
+Element Name
+
+Пример для печки:
+
+Element Id = element_a
+Element Name = Fire
+
+При нажатии E рядом с объектом в свободный слот инвентаря добавляется один элемент.
+
+Источники бесконечные. Если инвентарь заполнен, новый элемент не добавится.
+
+CraftTableInteractable
+
+Используется на физическом объекте стола в сцене.
+
+Объект:
+
+Room_01/CraftTable_01
+
+Компонент:
+
+CraftTableInteractable
+
+Назначение:
+
+открывает UI стола при нажатии E;
+не зависит от двери;
+остаётся интерактивным даже после открытия двери;
+позволяет возвращаться к уже использованным столам.
+
+Стол связывается через SceneInstaller.
+
+CraftingPanelUI
+
+Объект:
+
+UI/Canvas/CraftingPanel_Table_01
+
+Компонент:
+
+CraftingPanelUI
+
+Назначение:
+
+отображает свободное поле стола;
+принимает элементы из инвентаря;
+позволяет двигать элементы по столу;
+позволяет складывать два элемента drag and drop;
+при успешном крафте создаёт новый элемент на месте второго;
+сохраняет элементы на столе после закрытия панели.
+
+Важно: для каждого отдельного стола нужна отдельная CraftingPanelUI, если нужно сохранять состояние каждого стола отдельно.
+
+DoorInteractable
+
+Используется на двери.
+
+Объект:
+
+Room_01/Door_01
+
+Компонент:
+
+DoorInteractable
+
+Назначение:
+
+дверь больше не открывает стол;
+дверь только реагирует на создание нужного ключевого элемента;
+если создан нужный элемент, дверь открывается;
+при открытии может скрываться из сцены.
+
+Поля:
+
+Room Id = room_01
+Required Key Element Id = element_c
+Hide When Unlocked = true
+Как добавить новый источник элемента
+
+Пример: добавить источник воды.
+
+В Hierarchy выбрать комнату:
+Room_01
+Создать куб:
+Right Click → 3D Object → Cube
+Назвать объект:
+WaterWell
+Настроить позицию, например:
+Position X = -5
+Position Y = 0.5
+Position Z = 0
+Добавить компонент:
+Add Component → ElementSourceInteractable
+Заполнить поля:
+Element Id = water
+Element Name = Water
+Сохранить сцену:
+Ctrl + S
+
+Теперь при нажатии E рядом с WaterWell игрок получает Water.
+
+Как добавить новый рецепт
+
+Рецепты сейчас настраиваются в SceneInstaller.
+
+Выбрать объект:
+GameSystems/SceneInstaller
+В Inspector найти список:
+Recipes
+Увеличить Size на 1.
+Заполнить новый рецепт.
+
+Пример:
+
+Room Id = room_01
+Input A = water
+Input B = clay
+Result Id = mud
+Result Name = Mud
+
+Теперь на столе комнаты room_01 комбинация:
+
+Water + Clay
+
+даст:
+
+Mud
+
+Порядок элементов не важен:
+
+Water + Clay
+Clay + Water
+
+оба варианта работают.
+
+Как сделать разные результаты в разных комнатах
+
+CraftingSystem учитывает roomId.
+
+Например, в первой комнате:
+
+Room Id = room_01
+Input A = element_a
+Input B = element_b
+Result Id = element_c
+Result Name = Key Core
+
+Во второй комнате можно использовать те же входные элементы:
+
+Room Id = room_02
+Input A = element_a
+Input B = element_b
+Result Id = element_d
+Result Name = Room Two Result
+
+Итог:
+
+room_01: Fire + Stone → Key Core
+room_02: Fire + Stone → Room Two Result
+
+Без if/else, без ручной проверки комбинаций в коде, без архитектурного позора.
+
+Как добавить новый стол крафта
+
+Если нужен новый стол, у него должны быть:
+
+1. физический объект стола в комнате;
+2. отдельная UI-панель CraftingPanelUI;
+3. запись в SceneInstaller → Craft Tables.
+Шаг 1. Создать физический стол
+
+В комнате создать куб:
+
+Room_02 → Right Click → 3D Object → Cube
+
+Назвать:
+
+CraftTable_02
+
+Добавить компонент:
+
+CraftTableInteractable
+Шаг 2. Создать UI-панель стола
+
+В Canvas создать Panel:
+
+UI/Canvas → Right Click → UI → Panel
+
+Назвать:
+
+CraftingPanel_Table_02
+
+Добавить компонент:
+
+CraftingPanelUI
+
+Выключить объект в Inspector:
+
+[ ] CraftingPanel_Table_02
+
+То есть галочка активности у объекта должна быть снята.
+
+Шаг 3. Настроить SceneInstaller
+
+Выбрать:
+
+GameSystems/SceneInstaller
+
+В списке:
+
+Craft Tables
+
+увеличить Size на 1.
+
+Заполнить новый элемент:
+
+Table Id = table_02
+Room Id = room_02
+Table = Room_02/CraftTable_02
+Panel = UI/Canvas/CraftingPanel_Table_02
+Linked Door = Room_02/Door_02
+
+Если у стола пока нет двери, поле Linked Door можно оставить пустым.
+
+Как добавить новую дверь
+В комнате создать куб:
+Room_02 → Right Click → 3D Object → Cube
+Назвать:
+Door_02
+Добавить компонент:
+DoorInteractable
+Заполнить поля:
+Room Id = room_02
+Required Key Element Id = element_d
+Hide When Unlocked = true
+Если дверь должна открываться от конкретного стола, указать её в SceneInstaller у нужного CraftTableBinding:
+Linked Door = Room_02/Door_02
+
+Теперь при создании element_d на связанном столе дверь откроется.
+
+Как добавить новую комнату
+В Hierarchy создать пустой объект:
+Room_02
+Внутрь добавить:
+Plane_Floor
+источники элементов
+CraftTable_02
+Door_02
+Для источников указать нужные Element Id и Element Name.
+Для двери указать:
+Room Id = room_02
+Required Key Element Id = нужный_id_ключевого_элемента
+Создать отдельную UI-панель:
+UI/Canvas/CraftingPanel_Table_02
+Добавить новый элемент в:
+SceneInstaller → Craft Tables
+Добавить рецепты для room_02 в:
+SceneInstaller → Recipes
+Как работает крафт
+Игрок берёт элементы из источников.
+Элементы попадают в свободные слоты инвентаря.
+Игрок подходит к столу и нажимает E.
+Открывается UI конкретного стола.
+Игрок перетаскивает элементы из инвентаря на свободное поле стола.
+Элементы исчезают из инвентаря и появляются на столе.
+Игрок перетаскивает один элемент стола на другой.
+CraftingSystem ищет рецепт по:
+Room Id
+Input A
+Input B
+Если рецепт найден:
+два исходных элемента удаляются со стола;
+результат появляется на месте второго элемента;
+если результат совпадает с ключом связанной двери, дверь открывается.
+Соглашения по ID
+
+Использовать стабильные строковые ID:
+
+element_a
+element_b
+element_c
+clay
+water
+mud
+key_core
+
+Не использовать русские ID:
+
+огонь
+камень
+ключ
+
+Не использовать пробелы:
+
+key core
+fire stone
+
+Правильно:
+
+key_core
+fire_stone
+
+Отображаемое имя можно писать красиво:
+
+Element Id = key_core
+Element Name = Key Core
+Где менять визуальные цвета элементов
+
+Цвета временных UI-заглушек находятся в:
+
+Assets/Scripts/UI/InventorySlotUI.cs
+
+Метод:
+
+GetColorByElementId
+
+Пример:
+
+element_a → красный
+element_b → серый
+element_c → жёлтый
+clay → коричневый
+
+Это только визуальная заглушка для прототипа. Крафт от цветов не зависит
