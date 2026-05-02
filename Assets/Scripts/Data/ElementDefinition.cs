@@ -1,8 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Описание элемента: ID, имя, иконка и цвет-заглушка.
-/// Это данные, которые удобно настраивать через Inspector.
+/// Описание элемента: ID, имя, UI-иконка, цвет-заглушка и 3D-префаб для отображения в мире.
 /// </summary>
 [CreateAssetMenu(
     fileName = "ElementDefinition",
@@ -14,9 +13,16 @@ public sealed class ElementDefinition : ScriptableObject
     [SerializeField] private string id;
     [SerializeField] private string displayName;
 
-    [Header("Visual")]
+    [Header("UI Visual")]
     [SerializeField] private Sprite icon;
     [SerializeField] private Color fallbackColor = Color.gray;
+
+    [Header("World Visual")]
+    [SerializeField] private GameObject worldPrefab;
+    [SerializeField] private Vector3 worldScale = Vector3.one;
+
+    [Header("Rules")]
+    [SerializeField] private bool discardOnTableClose;
 
     public string Id
     {
@@ -36,6 +42,25 @@ public sealed class ElementDefinition : ScriptableObject
     public Color FallbackColor
     {
         get { return fallbackColor; }
+    }
+
+    public GameObject WorldPrefab
+    {
+        get { return worldPrefab; }
+    }
+
+    public Vector3 WorldScale
+    {
+        get { return worldScale; }
+    }
+
+    /// <summary>
+    /// Если true, элемент исчезает при закрытии крафтового стола и не возвращается в инвентарь.
+    /// Используется для глины голема.
+    /// </summary>
+    public bool DiscardOnTableClose
+    {
+        get { return discardOnTableClose; }
     }
 
     private void OnValidate()

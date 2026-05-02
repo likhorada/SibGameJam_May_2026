@@ -16,3 +16,6 @@ MonoBehaviour:
   displayName: Clay
   icon: {fileID: 0}
   fallbackColor: {r: 0.4037736, g: 0.1651835, b: 0.05104307, a: 1}
+  worldPrefab: {fileID: 0}
+  worldScale: {x: 1, y: 1, z: 1}
+  discardOnTableClose: 1

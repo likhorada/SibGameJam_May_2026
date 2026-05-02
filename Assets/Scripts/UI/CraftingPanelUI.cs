@@ -5,7 +5,7 @@ using UnityEngine.UI;
 /// <summary>
 /// UI стола крафта.
 /// При закрытии возвращает обычные элементы в инвентарь.
-/// Элементы из вечного слота глины при закрытии исчезают.
+/// Элементы с DiscardOnTableClose исчезают.
 /// </summary>
 public sealed class CraftingPanelUI : MonoBehaviour
 {
@@ -117,8 +117,8 @@ public sealed class CraftingPanelUI : MonoBehaviour
         first.DestroySelf();
         second.DestroySelf();
 
-        // Результат крафта считается обычным полученным элементом.
-        // При закрытии стола он должен вернуться в инвентарь.
+        // Результат крафта считается обычным полученным предметом.
+        // Но если сам результат помечен как DiscardOnTableClose, он тоже исчезнет при закрытии.
         CreateTableItem(
             result,
             resultPosition,
@@ -157,7 +157,12 @@ public sealed class CraftingPanelUI : MonoBehaviour
             if (item == null)
                 continue;
 
-            if (item.ShouldReturnToInventoryOnClose)
+            bool shouldReturn =
+                item.ShouldReturnToInventoryOnClose
+                && item.Element != null
+                && !item.Element.DiscardOnTableClose;
+
+            if (shouldReturn)
             {
                 bool added = Inventory.Instance.AddElement(item.Element);
 
@@ -165,8 +170,8 @@ public sealed class CraftingPanelUI : MonoBehaviour
                     return false;
             }
 
-            // Если это вечная глина, она просто уничтожается.
-            // Не добавляем её в инвентарь.
+            // Если это Clay или другой элемент с DiscardOnTableClose,
+            // он просто уничтожается и не возвращается в инвентарь.
             item.DestroySelf();
         }
 
@@ -183,6 +188,12 @@ public sealed class CraftingPanelUI : MonoBehaviour
             TableItemUI item = tableItems[i];
 
             if (item == null)
+                continue;
+
+            if (item.Element == null)
+                continue;
+
+            if (item.Element.DiscardOnTableClose)
                 continue;
 
             if (item.ShouldReturnToInventoryOnClose)

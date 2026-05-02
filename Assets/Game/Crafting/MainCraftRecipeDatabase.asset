@@ -25,3 +25,11 @@ MonoBehaviour:
     inputA: {fileID: 11400000, guid: 74017c2505dd4f040a7f63c1069d5f49, type: 2}
     inputB: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
     result: {fileID: 11400000, guid: eb27429e9f9be8b4e9fcbf42d0a77703, type: 2}
+  - roomId: room_01
+    inputA: {fileID: 11400000, guid: eb27429e9f9be8b4e9fcbf42d0a77703, type: 2}
+    inputB: {fileID: 11400000, guid: ef90c3302f58bc8488afc912ba041154, type: 2}
+    result: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
+  - roomId: room_01
+    inputA: {fileID: 11400000, guid: eb27429e9f9be8b4e9fcbf42d0a77703, type: 2}
+    inputB: {fileID: 11400000, guid: ef90c3302f58bc8488afc912ba041154, type: 2}
+    result: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
