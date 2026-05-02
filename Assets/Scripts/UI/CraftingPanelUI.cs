@@ -52,7 +52,7 @@ public sealed class CraftingPanelUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void CreateTableItem(ElementKind elementId, Vector2 tablePosition)
+    public void CreateTableItem(InventoryItemType elementId, Vector2 tablePosition)
     {
         GameObject itemObject = new GameObject("TableItem_" + elementId);
         itemObject.transform.SetParent(tableArea, false);
@@ -99,7 +99,7 @@ public sealed class CraftingPanelUI : MonoBehaviour
 
         CreateTableItem(result.ElementId, resultPosition);
 
-        resultText.text = "Created: " + ElementCatalog.GetDisplayName(result.ElementId);
+        resultText.text = "Created: " + Items.GetDisplayName(result.ElementId);
 
         if (linkedDoor != null)
             linkedDoor.NotifyCraftedElement(result.ElementId);

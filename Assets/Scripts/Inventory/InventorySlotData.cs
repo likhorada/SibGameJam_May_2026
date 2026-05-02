@@ -3,25 +3,25 @@
 /// </summary>
 public sealed class InventorySlotData
 {
-    public ElementKind ElementId { get; private set; }
+    public InventoryItemType ElementId { get; private set; }
 
     public string ElementName
     {
-        get { return ElementCatalog.GetDisplayName(ElementId); }
+        get { return Items.GetDisplayName(ElementId); }
     }
 
     public bool IsEmpty
     {
-        get { return ElementId == ElementKind.None; }
+        get { return ElementId == InventoryItemType.None; }
     }
 
-    public void Set(ElementKind elementId)
+    public void Set(InventoryItemType elementId)
     {
         ElementId = elementId;
     }
 
     public void Clear()
     {
-        ElementId = ElementKind.None;
+        ElementId = InventoryItemType.None;
     }
 }

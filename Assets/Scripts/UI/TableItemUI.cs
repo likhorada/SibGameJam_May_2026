@@ -16,13 +16,13 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
     private Vector2 previousTablePosition;
     private bool destroyedByDrop;
 
-    public ElementKind ElementId { get; private set; }
+    public InventoryItemType ElementId { get; private set; }
 
     public void Configure(
         Canvas rootCanvas,
         CraftingPanelUI craftingPanel,
         RectTransform tableArea,
-        ElementKind elementId)
+        InventoryItemType elementId)
     {
         this.rootCanvas = rootCanvas;
         this.craftingPanel = craftingPanel;
@@ -40,7 +40,7 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
         Text label = UIFactory.CreateText(
             parent: transform,
             name: "Label",
-            value: ElementCatalog.GetDisplayName(elementId),
+            value: Items.GetDisplayName(elementId),
             fontSize: 15,
             alignment: TextAnchor.MiddleCenter,
             anchorMin: Vector2.zero,

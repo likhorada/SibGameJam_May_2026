@@ -23,16 +23,16 @@ public sealed class SceneInstaller : MonoBehaviour
     {
         new CraftRecipe(
             roomId: "room_01",
-            inputA: ElementKind.Fire,
-            inputB: ElementKind.Stone,
-            resultId: ElementKind.KeyCore
+            inputA: InventoryItemType.Fire,
+            inputB: InventoryItemType.Stone,
+            resultId: InventoryItemType.KeyCore
         ),
 
         new CraftRecipe(
             roomId: "room_02",
-            inputA: ElementKind.Fire,
-            inputB: ElementKind.Stone,
-            resultId: ElementKind.RoomTwoResult
+            inputA: InventoryItemType.Fire,
+            inputB: InventoryItemType.Stone,
+            resultId: InventoryItemType.RoomTwoResult
         )
     };
 

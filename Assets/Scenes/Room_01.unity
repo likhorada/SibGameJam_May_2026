@@ -744,7 +744,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 758a3b8f5c30b28499f5eb666d3a2e76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementSourceInteractable
-  elementId: 5
+  elementType: 5
 --- !u!65 &460476593
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -998,7 +998,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 758a3b8f5c30b28499f5eb666d3a2e76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementSourceInteractable
-  elementId: 1
+  elementType: 1
 --- !u!65 &1076294332
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1124,7 +1124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 758a3b8f5c30b28499f5eb666d3a2e76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementSourceInteractable
-  elementId: 2
+  elementType: 2
 --- !u!65 &1333096455
 BoxCollider:
   m_ObjectHideFlags: 0

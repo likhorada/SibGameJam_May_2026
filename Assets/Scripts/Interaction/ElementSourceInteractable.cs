@@ -7,16 +7,16 @@ using UnityEngine;
 public sealed class ElementSourceInteractable : MonoBehaviour, IInteractable
 {
     [Header("Element")]
-    [SerializeField] private ElementKind elementId;
+    [SerializeField] private InventoryItemType elementType;
 
     public string InteractionPrompt
     {
-        get { return "Press E to collect " + ElementCatalog.GetDisplayName(elementId); }
+        get { return "Press E to collect " + Items.GetDisplayName(elementType); }
     }
 
-    public void Configure(ElementKind newElementId)
+    public void Configure(InventoryItemType elementType)
     {
-        elementId = newElementId;
+        this.elementType = elementType;
     }
 
     public void Interact(PlayerInteractor interactor)
@@ -27,6 +27,6 @@ public sealed class ElementSourceInteractable : MonoBehaviour, IInteractable
             return;
         }
 
-        Inventory.Instance.AddElement(elementId);
+        Inventory.Instance.AddElement(elementType);
     }
 }

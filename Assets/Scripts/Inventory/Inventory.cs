@@ -62,7 +62,7 @@ public sealed class Inventory : MonoBehaviour
         return slots;
     }
 
-    public bool AddElement(ElementKind elementId)
+    public bool AddElement(InventoryItemType elementId)
     {
         Initialize();
 
@@ -94,7 +94,7 @@ public sealed class Inventory : MonoBehaviour
         return true;
     }
 
-    public bool TrySetSlot(int index, ElementKind elementId)
+    public bool TrySetSlot(int index, InventoryItemType elementId)
     {
         Initialize();
 

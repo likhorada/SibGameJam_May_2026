@@ -19,12 +19,12 @@ public static class DragContext
 
     public static DragSourceType SourceType { get; private set; }
 
-    public static ElementKind ElementId { get; private set; }
+    public static InventoryItemType ElementId { get; private set; }
 
     public static int InventorySlotIndex { get; private set; }
     public static TableItemUI TableItem { get; private set; }
 
-    public static void BeginFromInventory(int slotIndex, ElementKind elementId)
+    public static void BeginFromInventory(int slotIndex, InventoryItemType elementId)
     {
         HasActiveDrag = true;
         WasHandled = false;
@@ -36,7 +36,7 @@ public static class DragContext
         ElementId = elementId;
     }
 
-    public static void BeginFromTable(TableItemUI tableItem, ElementKind elementId)
+    public static void BeginFromTable(TableItemUI tableItem, InventoryItemType elementId)
     {
         HasActiveDrag = true;
         WasHandled = false;
@@ -59,7 +59,7 @@ public static class DragContext
         WasHandled = false;
         SourceType = DragSourceType.None;
 
-        ElementId = ElementKind.None;
+        ElementId = InventoryItemType.None;
 
         InventorySlotIndex = -1;
         TableItem = null;

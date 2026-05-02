@@ -8,13 +8,13 @@ using UnityEngine.UI;
 /// </summary>
 public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
-    private static readonly Dictionary<ElementKind, Color> ElementColors = new Dictionary<ElementKind, Color>
+    private static readonly Dictionary<InventoryItemType, Color> ElementColors = new Dictionary<InventoryItemType, Color>
     {
-        [ElementKind.Fire] = new Color(0.9f, 0.22f, 0.08f, 1f),
-        [ElementKind.Stone] = new Color(0.5f, 0.5f, 0.5f, 1f),
-        [ElementKind.KeyCore] = new Color(0.95f, 0.78f, 0.18f, 1f),
-        [ElementKind.RoomTwoResult] = new Color(0.35f, 0.75f, 1f, 1f),
-        [ElementKind.Clay] = new Color(0.65f, 0.36f, 0.18f, 1f),
+        [InventoryItemType.Fire] = new Color(0.9f, 0.22f, 0.08f, 1f),
+        [InventoryItemType.Stone] = new Color(0.5f, 0.5f, 0.5f, 1f),
+        [InventoryItemType.KeyCore] = new Color(0.95f, 0.78f, 0.18f, 1f),
+        [InventoryItemType.RoomTwoResult] = new Color(0.35f, 0.75f, 1f, 1f),
+        [InventoryItemType.Clay] = new Color(0.65f, 0.36f, 0.18f, 1f),
     };
 
     private static readonly Color DefaultElementColor = new Color(0.3f, 0.3f, 0.3f, 1f);
@@ -27,7 +27,7 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
     private GameObject dragGhost;
     private RectTransform dragGhostRect;
 
-    private ElementKind elementId;
+    private InventoryItemType elementId;
 
     public void Configure(int slotIndex, Canvas rootCanvas, Text label, Image background)
     {
@@ -55,7 +55,7 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (elementId == ElementKind.None)
+        if (elementId == InventoryItemType.None)
             return;
 
         DragContext.BeginFromInventory(slotIndex, elementId);
@@ -81,7 +81,7 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         if (DragContext.SourceType != DragSourceType.TableItem)
             return;
 
-        if (elementId != ElementKind.None)
+        if (elementId != InventoryItemType.None)
             return;
 
         bool placed = Inventory.Instance.TrySetSlot(
@@ -98,7 +98,7 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
 
     private void SetEmpty()
     {
-        elementId = ElementKind.None;
+        elementId = InventoryItemType.None;
 
         if (label != null)
             label.text = "Empty";
@@ -122,7 +122,7 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         Text text = UIFactory.CreateText(
             parent: dragGhost.transform,
             name: "Text",
-            value: ElementCatalog.GetDisplayName(elementId),
+            value: Items.GetDisplayName(elementId),
             fontSize: 15,
             alignment: TextAnchor.MiddleCenter,
             anchorMin: Vector2.zero,
@@ -164,9 +164,9 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         dragGhostRect = null;
     }
 
-    public static Color GetColorForElement(ElementKind kind)
+    public static Color GetColorForElement(InventoryItemType kind)
     {
-        if (kind != ElementKind.None && ElementColors.TryGetValue(kind, out Color color))
+        if (kind != InventoryItemType.None && ElementColors.TryGetValue(kind, out Color color))
             return color;
 
         return DefaultElementColor;

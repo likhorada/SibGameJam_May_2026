@@ -32,7 +32,7 @@ public sealed class CraftingSystem : MonoBehaviour
         RebuildRecipeMap();
     }
 
-    public bool TryCraft(string roomId, ElementKind inputA, ElementKind inputB, out CraftResult result)
+    public bool TryCraft(string roomId, InventoryItemType inputA, InventoryItemType inputB, out CraftResult result)
     {
         CraftKey key = new CraftKey(roomId, inputA, inputB);
         return recipeMap.TryGetValue(key, out result);
@@ -55,10 +55,10 @@ public sealed class CraftingSystem : MonoBehaviour
     private readonly struct CraftKey : IEquatable<CraftKey>
     {
         private readonly string roomId;
-        private readonly ElementKind firstElementId;
-        private readonly ElementKind secondElementId;
+        private readonly InventoryItemType firstElementId;
+        private readonly InventoryItemType secondElementId;
 
-        public CraftKey(string roomId, ElementKind inputA, ElementKind inputB)
+        public CraftKey(string roomId, InventoryItemType inputA, InventoryItemType inputB)
         {
             this.roomId = roomId;
 
@@ -105,9 +105,9 @@ public sealed class CraftingSystem : MonoBehaviour
 /// </summary>
 public readonly struct CraftResult
 {
-    public ElementKind ElementId { get; }
+    public InventoryItemType ElementId { get; }
 
-    public CraftResult(ElementKind elementId)
+    public CraftResult(InventoryItemType elementId)
     {
         ElementId = elementId;
     }
