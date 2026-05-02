@@ -212,15 +212,13 @@ MonoBehaviour:
     LinkedDoor: {fileID: 662958042}
   recipes:
   - roomId: room_01
-    inputA: element_a
-    inputB: element_b
-    resultId: element_c
-    resultName: Key Core
+    inputA: 1
+    inputB: 2
+    resultId: 3
   - roomId: room_02
-    inputA: element_a
-    inputB: element_b
-    resultId: element_d
-    resultName: Room Two Result
+    inputA: 1
+    inputB: 2
+    resultId: 4
 --- !u!1 &149222676
 GameObject:
   m_ObjectHideFlags: 0
@@ -746,8 +744,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 758a3b8f5c30b28499f5eb666d3a2e76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementSourceInteractable
-  elementId: clay
-  elementName: Clay
+  elementId: 5
 --- !u!65 &460476593
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -859,7 +856,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DoorInteractable
   roomId: room_01
-  requiredKeyElementId: element_c
+  requiredKeyElementId: 3
   hideWhenUnlocked: 1
 --- !u!65 &662958043
 BoxCollider:
@@ -1001,8 +998,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 758a3b8f5c30b28499f5eb666d3a2e76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementSourceInteractable
-  elementId: element_a
-  elementName: Fire
+  elementId: 1
 --- !u!65 &1076294332
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1128,8 +1124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 758a3b8f5c30b28499f5eb666d3a2e76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ElementSourceInteractable
-  elementId: element_b
-  elementName: Stone
+  elementId: 2
 --- !u!65 &1333096455
 BoxCollider:
   m_ObjectHideFlags: 0

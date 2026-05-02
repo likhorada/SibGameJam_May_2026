@@ -10,7 +10,7 @@ public sealed class DoorInteractable : MonoBehaviour, IInteractable
     [SerializeField] private string roomId = "room_01";
 
     [Header("Unlock")]
-    [SerializeField] private string requiredKeyElementId = "element_c";
+    [SerializeField] private ElementKind requiredKeyElementId = ElementKind.KeyCore;
 
     [Header("Visual")]
     [SerializeField] private bool hideWhenUnlocked = true;
@@ -22,7 +22,7 @@ public sealed class DoorInteractable : MonoBehaviour, IInteractable
         get { return roomId; }
     }
 
-    public string RequiredKeyElementId
+    public ElementKind RequiredKeyElementId
     {
         get { return requiredKeyElementId; }
     }
@@ -37,7 +37,7 @@ public sealed class DoorInteractable : MonoBehaviour, IInteractable
         get { return unlocked ? "Door is open" : "Door is locked"; }
     }
 
-    public void Configure(string roomId, string requiredKeyElementId)
+    public void Configure(string roomId, ElementKind requiredKeyElementId)
     {
         this.roomId = roomId;
         this.requiredKeyElementId = requiredKeyElementId;
@@ -54,7 +54,7 @@ public sealed class DoorInteractable : MonoBehaviour, IInteractable
         Debug.Log("Door is locked. Create key element: " + requiredKeyElementId);
     }
 
-    public void NotifyCraftedElement(string elementId)
+    public void NotifyCraftedElement(ElementKind elementId)
     {
         if (unlocked)
             return;

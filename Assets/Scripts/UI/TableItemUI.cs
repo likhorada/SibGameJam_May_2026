@@ -16,34 +16,31 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
     private Vector2 previousTablePosition;
     private bool destroyedByDrop;
 
-    public string ElementId { get; private set; }
-    public string ElementName { get; private set; }
+    public ElementKind ElementId { get; private set; }
 
     public void Configure(
         Canvas rootCanvas,
         CraftingPanelUI craftingPanel,
         RectTransform tableArea,
-        string elementId,
-        string elementName)
+        ElementKind elementId)
     {
         this.rootCanvas = rootCanvas;
         this.craftingPanel = craftingPanel;
         this.tableArea = tableArea;
 
         ElementId = elementId;
-        ElementName = elementName;
 
         rectTransform = transform as RectTransform;
         canvasGroup = gameObject.AddComponent<CanvasGroup>();
 
         Image image = GetComponent<Image>();
         if (image != null)
-            image.color = InventorySlotUI.GetColorByElementId(elementId);
+            image.color = InventorySlotUI.GetColorForElement(elementId);
 
         Text label = UIFactory.CreateText(
             parent: transform,
             name: "Label",
-            value: elementName,
+            value: ElementCatalog.GetDisplayName(elementId),
             fontSize: 15,
             alignment: TextAnchor.MiddleCenter,
             anchorMin: Vector2.zero,
@@ -78,7 +75,7 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
     {
         previousTablePosition = rectTransform.anchoredPosition;
 
-        DragContext.BeginFromTable(this, ElementId, ElementName);
+        DragContext.BeginFromTable(this, ElementId);
 
         canvasGroup.blocksRaycasts = false;
         transform.SetParent(rootCanvas.transform, true);

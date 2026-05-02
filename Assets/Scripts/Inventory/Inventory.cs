@@ -62,7 +62,7 @@ public sealed class Inventory : MonoBehaviour
         return slots;
     }
 
-    public bool AddElement(string elementId, string elementName)
+    public bool AddElement(ElementKind elementId)
     {
         Initialize();
 
@@ -74,7 +74,7 @@ public sealed class Inventory : MonoBehaviour
             return false;
         }
 
-        slots[emptyIndex].Set(elementId, elementName);
+        slots[emptyIndex].Set(elementId);
         NotifyChanged();
         return true;
     }
@@ -94,7 +94,7 @@ public sealed class Inventory : MonoBehaviour
         return true;
     }
 
-    public bool TrySetSlot(int index, string elementId, string elementName)
+    public bool TrySetSlot(int index, ElementKind elementId)
     {
         Initialize();
 
@@ -104,7 +104,7 @@ public sealed class Inventory : MonoBehaviour
         if (!slots[index].IsEmpty)
             return false;
 
-        slots[index].Set(elementId, elementName);
+        slots[index].Set(elementId);
         NotifyChanged();
         return true;
     }

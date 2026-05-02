@@ -32,7 +32,7 @@ public sealed class CraftingSystem : MonoBehaviour
         RebuildRecipeMap();
     }
 
-    public bool TryCraft(string roomId, string inputA, string inputB, out CraftResult result)
+    public bool TryCraft(string roomId, ElementKind inputA, ElementKind inputB, out CraftResult result)
     {
         CraftKey key = new CraftKey(roomId, inputA, inputB);
         return recipeMap.TryGetValue(key, out result);
@@ -46,7 +46,7 @@ public sealed class CraftingSystem : MonoBehaviour
         {
             CraftRecipe recipe = recipes[i];
             CraftKey key = new CraftKey(recipe.RoomId, recipe.InputA, recipe.InputB);
-            CraftResult result = new CraftResult(recipe.ResultId, recipe.ResultName);
+            CraftResult result = new CraftResult(recipe.ResultId);
 
             recipeMap[key] = result;
         }
@@ -55,16 +55,14 @@ public sealed class CraftingSystem : MonoBehaviour
     private readonly struct CraftKey : IEquatable<CraftKey>
     {
         private readonly string roomId;
-        private readonly string firstElementId;
-        private readonly string secondElementId;
+        private readonly ElementKind firstElementId;
+        private readonly ElementKind secondElementId;
 
-        public CraftKey(string roomId, string inputA, string inputB)
+        public CraftKey(string roomId, ElementKind inputA, ElementKind inputB)
         {
             this.roomId = roomId;
 
-            int compare = string.CompareOrdinal(inputA, inputB);
-
-            if (compare <= 0)
+            if (inputA <= inputB)
             {
                 firstElementId = inputA;
                 secondElementId = inputB;
@@ -94,8 +92,8 @@ public sealed class CraftingSystem : MonoBehaviour
             {
                 int hash = 17;
                 hash = hash * 31 + (roomId == null ? 0 : roomId.GetHashCode());
-                hash = hash * 31 + (firstElementId == null ? 0 : firstElementId.GetHashCode());
-                hash = hash * 31 + (secondElementId == null ? 0 : secondElementId.GetHashCode());
+                hash = hash * 31 + (int)firstElementId;
+                hash = hash * 31 + (int)secondElementId;
                 return hash;
             }
         }
@@ -107,12 +105,10 @@ public sealed class CraftingSystem : MonoBehaviour
 /// </summary>
 public readonly struct CraftResult
 {
-    public string Id { get; }
-    public string DisplayName { get; }
+    public ElementKind ElementId { get; }
 
-    public CraftResult(string id, string displayName)
+    public CraftResult(ElementKind elementId)
     {
-        Id = id;
-        DisplayName = displayName;
+        ElementId = elementId;
     }
 }

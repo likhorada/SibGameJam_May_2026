@@ -29,11 +29,7 @@ public sealed class TableDropArea : MonoBehaviour, IDropHandler
             if (!removedFromInventory)
                 return;
 
-            craftingPanel.CreateTableItem(
-                DragContext.ElementId,
-                DragContext.ElementName,
-                localPoint
-            );
+            craftingPanel.CreateTableItem(DragContext.ElementId, localPoint);
 
             DragContext.MarkHandled();
             return;

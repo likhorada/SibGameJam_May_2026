@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -7,6 +8,17 @@ using UnityEngine.UI;
 /// </summary>
 public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
+    private static readonly Dictionary<ElementKind, Color> ElementColors = new Dictionary<ElementKind, Color>
+    {
+        [ElementKind.Fire] = new Color(0.9f, 0.22f, 0.08f, 1f),
+        [ElementKind.Stone] = new Color(0.5f, 0.5f, 0.5f, 1f),
+        [ElementKind.KeyCore] = new Color(0.95f, 0.78f, 0.18f, 1f),
+        [ElementKind.RoomTwoResult] = new Color(0.35f, 0.75f, 1f, 1f),
+        [ElementKind.Clay] = new Color(0.65f, 0.36f, 0.18f, 1f),
+    };
+
+    private static readonly Color DefaultElementColor = new Color(0.3f, 0.3f, 0.3f, 1f);
+
     private int slotIndex;
     private Canvas rootCanvas;
     private Text label;
@@ -15,8 +27,7 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
     private GameObject dragGhost;
     private RectTransform dragGhostRect;
 
-    private string elementId;
-    private string elementName;
+    private ElementKind elementId;
 
     public void Configure(int slotIndex, Canvas rootCanvas, Text label, Image background)
     {
@@ -37,18 +48,17 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         }
 
         elementId = data.ElementId;
-        elementName = data.ElementName;
 
-        label.text = elementName;
-        background.color = GetColorByElementId(elementId);
+        label.text = data.ElementName;
+        background.color = GetColorForElement(elementId);
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (string.IsNullOrEmpty(elementId))
+        if (elementId == ElementKind.None)
             return;
 
-        DragContext.BeginFromInventory(slotIndex, elementId, elementName);
+        DragContext.BeginFromInventory(slotIndex, elementId);
         CreateDragGhost(eventData);
     }
 
@@ -71,13 +81,12 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         if (DragContext.SourceType != DragSourceType.TableItem)
             return;
 
-        if (!string.IsNullOrEmpty(elementId))
+        if (elementId != ElementKind.None)
             return;
 
         bool placed = Inventory.Instance.TrySetSlot(
             slotIndex,
-            DragContext.ElementId,
-            DragContext.ElementName
+            DragContext.ElementId
         );
 
         if (!placed)
@@ -89,8 +98,7 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
 
     private void SetEmpty()
     {
-        elementId = string.Empty;
-        elementName = string.Empty;
+        elementId = ElementKind.None;
 
         if (label != null)
             label.text = "Empty";
@@ -108,13 +116,13 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         dragGhostRect.sizeDelta = new Vector2(150f, 70f);
 
         Image image = dragGhost.AddComponent<Image>();
-        image.color = GetColorByElementId(elementId);
+        image.color = GetColorForElement(elementId);
         image.raycastTarget = false;
 
         Text text = UIFactory.CreateText(
             parent: dragGhost.transform,
             name: "Text",
-            value: elementName,
+            value: ElementCatalog.GetDisplayName(elementId),
             fontSize: 15,
             alignment: TextAnchor.MiddleCenter,
             anchorMin: Vector2.zero,
@@ -156,27 +164,11 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         dragGhostRect = null;
     }
 
-    public static Color GetColorByElementId(string id)
+    public static Color GetColorForElement(ElementKind kind)
     {
-        switch (id)
-        {
-            case "element_a":
-                return new Color(0.9f, 0.22f, 0.08f, 1f);
+        if (kind != ElementKind.None && ElementColors.TryGetValue(kind, out Color color))
+            return color;
 
-            case "element_b":
-                return new Color(0.5f, 0.5f, 0.5f, 1f);
-
-            case "element_c":
-                return new Color(0.95f, 0.78f, 0.18f, 1f);
-
-            case "element_d":
-                return new Color(0.35f, 0.75f, 1f, 1f);
-
-            case "clay":
-                return new Color(0.65f, 0.36f, 0.18f, 1f);
-
-            default:
-                return new Color(0.3f, 0.3f, 0.3f, 1f);
-        }
+        return DefaultElementColor;
     }
 }

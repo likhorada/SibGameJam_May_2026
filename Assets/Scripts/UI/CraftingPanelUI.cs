@@ -52,7 +52,7 @@ public sealed class CraftingPanelUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void CreateTableItem(string elementId, string elementName, Vector2 tablePosition)
+    public void CreateTableItem(ElementKind elementId, Vector2 tablePosition)
     {
         GameObject itemObject = new GameObject("TableItem_" + elementId);
         itemObject.transform.SetParent(tableArea, false);
@@ -62,7 +62,7 @@ public sealed class CraftingPanelUI : MonoBehaviour
         rectTransform.anchoredPosition = tablePosition;
 
         Image image = itemObject.AddComponent<Image>();
-        image.color = InventorySlotUI.GetColorByElementId(elementId);
+        image.color = InventorySlotUI.GetColorForElement(elementId);
         image.raycastTarget = true;
 
         TableItemUI tableItem = itemObject.AddComponent<TableItemUI>();
@@ -70,8 +70,7 @@ public sealed class CraftingPanelUI : MonoBehaviour
             rootCanvas,
             this,
             tableArea,
-            elementId,
-            elementName
+            elementId
         );
 
         tableItems.Add(tableItem);
@@ -98,16 +97,12 @@ public sealed class CraftingPanelUI : MonoBehaviour
         first.DestroySelf();
         second.DestroySelf();
 
-        CreateTableItem(
-            result.Id,
-            result.DisplayName,
-            resultPosition
-        );
+        CreateTableItem(result.ElementId, resultPosition);
 
-        resultText.text = "Created: " + result.DisplayName;
+        resultText.text = "Created: " + ElementCatalog.GetDisplayName(result.ElementId);
 
         if (linkedDoor != null)
-            linkedDoor.NotifyCraftedElement(result.Id);
+            linkedDoor.NotifyCraftedElement(result.ElementId);
 
         return true;
     }

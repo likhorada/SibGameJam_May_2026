@@ -8,42 +8,35 @@ using UnityEngine;
 public sealed class CraftRecipe
 {
     [SerializeField] private string roomId;
-    [SerializeField] private string inputA;
-    [SerializeField] private string inputB;
-    [SerializeField] private string resultId;
-    [SerializeField] private string resultName;
+    [SerializeField] private ElementKind inputA;
+    [SerializeField] private ElementKind inputB;
+    [SerializeField] private ElementKind resultId;
 
     public string RoomId
     {
         get { return roomId; }
     }
 
-    public string InputA
+    public ElementKind InputA
     {
         get { return inputA; }
     }
 
-    public string InputB
+    public ElementKind InputB
     {
         get { return inputB; }
     }
 
-    public string ResultId
+    public ElementKind ResultId
     {
         get { return resultId; }
     }
 
-    public string ResultName
-    {
-        get { return resultName; }
-    }
-
-    public CraftRecipe(string roomId, string inputA, string inputB, string resultId, string resultName)
+    public CraftRecipe(string roomId, ElementKind inputA, ElementKind inputB, ElementKind resultId)
     {
         this.roomId = roomId;
         this.inputA = inputA;
         this.inputB = inputB;
         this.resultId = resultId;
-        this.resultName = resultName;
     }
 }
