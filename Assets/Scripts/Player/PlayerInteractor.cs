@@ -12,6 +12,9 @@ public sealed class PlayerInteractor : MonoBehaviour
 
     private void Update()
     {
+        if (CraftingPanelUI.HasOpenPanel)
+            return;
+
         if (Input.GetKeyDown(KeyCode.E))
             TryInteract();
     }
@@ -40,7 +43,7 @@ public sealed class PlayerInteractor : MonoBehaviour
         if (!Physics.Raycast(ray, out RaycastHit hit, interactDistance))
             return null;
 
-        return hit.collider.GetComponent<IInteractable>();
+        return GetInteractable(hit.collider);
     }
 
     private IInteractable FindNearestByOverlap()
@@ -52,7 +55,7 @@ public sealed class PlayerInteractor : MonoBehaviour
 
         for (int i = 0; i < hits.Length; i++)
         {
-            IInteractable interactable = hits[i].GetComponent<IInteractable>();
+            IInteractable interactable = GetInteractable(hits[i]);
 
             if (interactable == null)
                 continue;
@@ -67,6 +70,19 @@ public sealed class PlayerInteractor : MonoBehaviour
         }
 
         return nearestInteractable;
+    }
+
+    private static IInteractable GetInteractable(Collider sourceCollider)
+    {
+        if (sourceCollider == null)
+            return null;
+
+        IInteractable interactable = sourceCollider.GetComponent<IInteractable>();
+
+        if (interactable != null)
+            return interactable;
+
+        return sourceCollider.GetComponentInParent<IInteractable>();
     }
 
     private void OnDrawGizmosSelected()

@@ -107,12 +107,23 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         if (element != null)
             return;
 
+        TableItemUI tableItem = DragContext.TableItem;
+
+        if (tableItem == null)
+            return;
+
+        if (!tableItem.ShouldReturnToInventoryOnClose)
+            return;
+
+        if (DragContext.Element == null || DragContext.Element.DiscardOnTableClose)
+            return;
+
         bool placed = Inventory.Instance.TrySetSlot(slotIndex, DragContext.Element);
 
         if (!placed)
             return;
 
-        DragContext.TableItem.DestroySelf();
+        tableItem.DestroySelf();
         DragContext.MarkHandled();
     }
 

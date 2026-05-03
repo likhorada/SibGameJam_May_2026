@@ -17,16 +17,46 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
     [SerializeField] private Vector3 fallbackCubeScale = new Vector3(0.35f, 0.35f, 0.35f);
     [SerializeField] private float fallbackVerticalOffset = 0.35f;
 
-    private readonly bool[] placed = new bool[3];
-    private readonly GameObject[] spawnedVisuals = new GameObject[3];
+    private bool[] placed;
+    private GameObject[] spawnedVisuals;
 
     public string InteractionPrompt
     {
         get { return "Press E to place required item"; }
     }
 
+    private void Awake()
+    {
+        EnsureRuntimeState();
+    }
+
+    private void OnValidate()
+    {
+        if (requiredItems == null)
+            requiredItems = new ElementDefinition[0];
+
+        if (itemAnchors == null)
+        {
+            itemAnchors = new Transform[requiredItems.Length];
+            return;
+        }
+
+        if (itemAnchors.Length == requiredItems.Length)
+            return;
+
+        Transform[] resizedAnchors = new Transform[requiredItems.Length];
+        int copyCount = Mathf.Min(itemAnchors.Length, resizedAnchors.Length);
+
+        for (int i = 0; i < copyCount; i++)
+            resizedAnchors[i] = itemAnchors[i];
+
+        itemAnchors = resizedAnchors;
+    }
+
     public void Interact(PlayerInteractor interactor)
     {
+        EnsureRuntimeState();
+
         if (Inventory.Instance == null)
         {
             Debug.LogError("OfferingTableInteractable: Inventory instance not found");
@@ -87,6 +117,8 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
 
     private void SpawnItemVisual(int index, ElementDefinition element)
     {
+        EnsureRuntimeState();
+
         if (spawnedVisuals[index] != null)
             Destroy(spawnedVisuals[index]);
 
@@ -144,6 +176,9 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
 
     private bool IsCompleted()
     {
+        if (requiredItems == null || requiredItems.Length == 0)
+            return false;
+
         for (int i = 0; i < requiredItems.Length; i++)
         {
             if (requiredItems[i] == null)
@@ -165,5 +200,46 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
         // - активировать кат-сцену;
         // - запустить событие комнаты;
         // - включить следующий механизм.
+    }
+
+    private void EnsureRuntimeState()
+    {
+        int count = requiredItems == null ? 0 : requiredItems.Length;
+
+        if (placed == null || placed.Length != count)
+            placed = ResizeStateArray(placed, count);
+
+        if (spawnedVisuals == null || spawnedVisuals.Length != count)
+            spawnedVisuals = ResizeVisualArray(spawnedVisuals, count);
+    }
+
+    private static bool[] ResizeStateArray(bool[] source, int size)
+    {
+        bool[] result = new bool[size];
+
+        if (source == null)
+            return result;
+
+        int copyCount = Mathf.Min(source.Length, result.Length);
+
+        for (int i = 0; i < copyCount; i++)
+            result[i] = source[i];
+
+        return result;
+    }
+
+    private static GameObject[] ResizeVisualArray(GameObject[] source, int size)
+    {
+        GameObject[] result = new GameObject[size];
+
+        if (source == null)
+            return result;
+
+        int copyCount = Mathf.Min(source.Length, result.Length);
+
+        for (int i = 0; i < copyCount; i++)
+            result[i] = source[i];
+
+        return result;
     }
 }

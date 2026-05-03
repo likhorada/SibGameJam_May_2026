@@ -10,9 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0f2975433453aa249a683a73d1e2192f, type: 3}
-  m_Name: Stone
+  m_Name: Berries
   m_EditorClassIdentifier: Assembly-CSharp::ElementDefinition
-  id: stone
-  displayName: Stone
-  icon: {fileID: 0}
-  fallbackColor: {r: 0.4943396, g: 0.45796365, b: 0.45796365, a: 1}
+  id: berries
+  displayName: Berries
+  icon: {fileID: 21300000, guid: 7af82e13f04a49e69d1cbe186c79e178, type: 3}
+  fallbackColor: {r: 0.7058824, g: 0.1254902, b: 0.21960784, a: 1}
+  worldPrefab: {fileID: 0}
+  worldScale: {x: 1, y: 1, z: 1}
+  discardOnTableClose: 0

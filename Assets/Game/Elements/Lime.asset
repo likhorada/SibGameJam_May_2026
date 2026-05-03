@@ -10,9 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0f2975433453aa249a683a73d1e2192f, type: 3}
-  m_Name: Torch
+  m_Name: Lime
   m_EditorClassIdentifier: Assembly-CSharp::ElementDefinition
-  id: torch
-  displayName: Torch
-  icon: {fileID: 21300000, guid: b63e56bec9ed4794ae601720b7b068d5, type: 3}
-  fallbackColor: {r: 0.9622642, g: 0.66673434, b: 0.041758526, a: 1}
+  id: lime
+  displayName: Lime
+  icon: {fileID: 21300000, guid: 044697e4ef1c400fbaf698c385a59a21, type: 3}
+  fallbackColor: {r: 0.7058824, g: 0.7372549, b: 0.21568629, a: 1}
+  worldPrefab: {fileID: 0}
+  worldScale: {x: 1, y: 1, z: 1}
+  discardOnTableClose: 0

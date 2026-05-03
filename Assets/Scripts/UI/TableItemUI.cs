@@ -15,6 +15,7 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
     private CanvasGroup canvasGroup;
 
     private Vector2 previousTablePosition;
+    private Vector2 originalSizeDelta;
     private bool destroyedByDrop;
 
     public ElementDefinition Element { get; private set; }
@@ -22,7 +23,6 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
     /// <summary>
     /// true — элемент вернётся в инвентарь при закрытии стола.
     /// false — элемент исчезнет при закрытии стола.
-    /// Для вечной глины должно быть false.
     /// </summary>
     public bool ShouldReturnToInventoryOnClose { get; private set; }
 
@@ -40,7 +40,11 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
         this.ShouldReturnToInventoryOnClose = shouldReturnToInventoryOnClose;
 
         rectTransform = transform as RectTransform;
+        originalSizeDelta = rectTransform.sizeDelta;
+
         canvasGroup = gameObject.AddComponent<CanvasGroup>();
+
+        ResetRectTransform();
 
         Image image = GetComponent<Image>();
         image.color = element.FallbackColor;
@@ -72,6 +76,9 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
     public void AttachToTable(Vector2 tablePosition)
     {
         transform.SetParent(tableArea, false);
+
+        ResetRectTransform();
+
         rectTransform.anchoredPosition = tablePosition;
         canvasGroup.blocksRaycasts = true;
     }
@@ -90,8 +97,12 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
         DragContext.BeginFromTable(this, Element);
 
         canvasGroup.blocksRaycasts = false;
-        transform.SetParent(rootCanvas.transform, true);
 
+        // Важно: не сохраняем world scale при переносе в Canvas.
+        // Иначе после возврата элемент может стать меньше/больше.
+        transform.SetParent(rootCanvas.transform, false);
+
+        ResetRectTransform();
         MoveToPointer(eventData);
     }
 
@@ -120,21 +131,43 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
         if (!DragContext.HasActiveDrag)
             return;
 
-        if (DragContext.SourceType != DragSourceType.TableItem)
-            return;
-
-        TableItemUI draggedItem = DragContext.TableItem;
-
-        if (draggedItem == null || draggedItem == this)
-            return;
-
         Vector2 resultPosition = GetTablePosition();
 
-        bool crafted = craftingPanel.TryCraftTableItems(
-            draggedItem,
-            this,
-            resultPosition
-        );
+        bool crafted = false;
+
+        if (DragContext.SourceType == DragSourceType.TableItem)
+        {
+            TableItemUI draggedItem = DragContext.TableItem;
+
+            if (draggedItem == null || draggedItem == this)
+                return;
+
+            crafted = craftingPanel.TryCraftTableItems(
+                draggedItem,
+                this,
+                resultPosition
+            );
+        }
+        else if (DragContext.SourceType == DragSourceType.InventorySlot)
+        {
+            crafted = craftingPanel.TryCraftIncomingElement(
+                DragContext.Element,
+                this,
+                resultPosition,
+                consumeInventorySlot: true,
+                inventorySlotIndex: DragContext.InventorySlotIndex
+            );
+        }
+        else if (DragContext.SourceType == DragSourceType.PermanentElementSlot)
+        {
+            crafted = craftingPanel.TryCraftIncomingElement(
+                DragContext.Element,
+                this,
+                resultPosition,
+                consumeInventorySlot: false,
+                inventorySlotIndex: -1
+            );
+        }
 
         if (crafted)
             DragContext.MarkHandled();
@@ -153,5 +186,12 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
 
         if (converted)
             rectTransform.anchoredPosition = localPoint;
+    }
+
+    private void ResetRectTransform()
+    {
+        rectTransform.localScale = Vector3.one;
+        rectTransform.localRotation = Quaternion.identity;
+        rectTransform.sizeDelta = originalSizeDelta;
     }
 }

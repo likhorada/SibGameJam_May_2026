@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0f2975433453aa249a683a73d1e2192f, type: 3}
-  m_Name: ElementDefinition
+  m_Name: Yeast
   m_EditorClassIdentifier: Assembly-CSharp::ElementDefinition
-  id: 
-  displayName: 
-  icon: {fileID: 0}
-  fallbackColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  id: yeast
+  displayName: Yeast
+  icon: {fileID: 21300000, guid: d0730caddb524593986fcb1c54187f41, type: 3}
+  fallbackColor: {r: 0.85882354, g: 0.7607843, b: 0.52156866, a: 1}
   worldPrefab: {fileID: 0}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

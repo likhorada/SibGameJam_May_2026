@@ -20,6 +20,12 @@ public sealed class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        if (CraftingPanelUI.HasOpenPanel)
+        {
+            inputDirection = Vector3.zero;
+            return;
+        }
+
         Camera activeCamera = GetActiveCamera();
         if (activeCamera != null)
             cameraTransform = activeCamera.transform;

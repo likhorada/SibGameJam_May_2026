@@ -6,9 +6,41 @@ using UnityEngine.UI;
 /// UI стола крафта.
 /// При закрытии возвращает обычные элементы в инвентарь.
 /// Элементы с DiscardOnTableClose исчезают.
+/// Размеры панели и поля настраиваются в Inspector.
 /// </summary>
 public sealed class CraftingPanelUI : MonoBehaviour
 {
+    private static int openPanelCount;
+
+    public static bool HasOpenPanel
+    {
+        get { return openPanelCount > 0; }
+    }
+
+    [Header("Panel Layout")]
+    [SerializeField] private Vector2 panelSize = new Vector2(1050f, 650f);
+    [SerializeField] private Vector2 panelPosition = new Vector2(0f, 40f);
+
+    [Header("Table Area Layout")]
+    [SerializeField] private Vector2 tableAreaSize = new Vector2(900f, 470f);
+    [SerializeField] private Vector2 tableAreaPosition = new Vector2(0f, 0f);
+
+    [Header("Table Item Layout")]
+    [SerializeField] private Vector2 tableItemSize = new Vector2(150f, 110f);
+
+    [Header("Text Layout")]
+    [SerializeField] private Vector2 titlePosition = new Vector2(0f, -18f);
+    [SerializeField] private Vector2 titleSize = new Vector2(900f, 40f);
+    [SerializeField] private Vector2 resultTextPosition = new Vector2(0f, 20f);
+    [SerializeField] private Vector2 resultTextSize = new Vector2(900f, 40f);
+
+    [Header("Close Button Layout")]
+    [SerializeField] private Vector2 closeButtonPosition = new Vector2(-12f, -12f);
+    [SerializeField] private Vector2 closeButtonSize = new Vector2(42f, 42f);
+
+    [Header("Colors")]
+    [SerializeField] private Color tableAreaColor = new Color(0.08f, 0.08f, 0.08f, 0.95f);
+
     private Canvas rootCanvas;
     private RectTransform tableArea;
     private Text titleText;
@@ -18,12 +50,15 @@ public sealed class CraftingPanelUI : MonoBehaviour
     private string currentRoomId;
 
     private bool isBuilt;
+    private bool isOpen;
 
     private readonly List<TableItemUI> tableItems = new List<TableItemUI>();
 
     public void Configure(Canvas canvas)
     {
         rootCanvas = canvas;
+
+        ForcePanelRect();
 
         if (!isBuilt)
             BuildUI();
@@ -35,15 +70,25 @@ public sealed class CraftingPanelUI : MonoBehaviour
             Close();
     }
 
+    private void OnDisable()
+    {
+        MarkClosed();
+    }
+
     public void Open(string tableId, string roomId)
     {
         currentTableId = tableId;
         currentRoomId = roomId;
 
+        ForcePanelRect();
         gameObject.SetActive(true);
+        MarkOpened();
 
-        titleText.text = "Craft Table / " + currentTableId + " / " + currentRoomId;
-        resultText.text = "Drag elements to the table";
+        if (titleText != null)
+            titleText.text = "Craft Table / " + currentTableId + " / " + currentRoomId;
+
+        if (resultText != null)
+            resultText.text = "Drag elements to the table";
     }
 
     public void Close()
@@ -52,7 +97,9 @@ public sealed class CraftingPanelUI : MonoBehaviour
 
         if (!returned)
         {
-            resultText.text = "Inventory is full";
+            if (resultText != null)
+                resultText.text = "Inventory is full";
+
             return;
         }
 
@@ -71,7 +118,7 @@ public sealed class CraftingPanelUI : MonoBehaviour
         itemObject.transform.SetParent(tableArea, false);
 
         RectTransform rectTransform = itemObject.AddComponent<RectTransform>();
-        rectTransform.sizeDelta = new Vector2(110f, 80f);
+        rectTransform.sizeDelta = tableItemSize;
         rectTransform.anchoredPosition = tablePosition;
 
         Image image = itemObject.AddComponent<Image>();
@@ -110,22 +157,83 @@ public sealed class CraftingPanelUI : MonoBehaviour
 
         if (!success)
         {
-            resultText.text = "No recipe";
+            if (resultText != null)
+                resultText.text = "No recipe";
+
             return false;
         }
 
         first.DestroySelf();
         second.DestroySelf();
 
-        // Результат крафта считается обычным полученным предметом.
-        // Но если сам результат помечен как DiscardOnTableClose, он тоже исчезнет при закрытии.
         CreateTableItem(
             result,
             resultPosition,
             shouldReturnToInventoryOnClose: true
         );
 
-        resultText.text = "Created: " + result.DisplayName;
+        if (resultText != null)
+            resultText.text = "Created: " + result.DisplayName;
+
+        return true;
+    }
+
+    public bool TryCraftIncomingElement(
+        ElementDefinition incomingElement,
+        TableItemUI tableItem,
+        Vector2 resultPosition,
+        bool consumeInventorySlot,
+        int inventorySlotIndex)
+    {
+        if (CraftingSystem.Instance == null)
+        {
+            Debug.LogError("CraftingPanelUI: CraftingSystem instance not found");
+            return false;
+        }
+
+        if (incomingElement == null || tableItem == null || tableItem.Element == null)
+            return false;
+
+        bool success = CraftingSystem.Instance.TryCraft(
+            currentRoomId,
+            incomingElement,
+            tableItem.Element,
+            out ElementDefinition result
+        );
+
+        if (!success)
+        {
+            if (resultText != null)
+                resultText.text = "No recipe";
+
+            return false;
+        }
+
+        if (consumeInventorySlot)
+        {
+            if (Inventory.Instance == null)
+            {
+                Debug.LogError("CraftingPanelUI: Inventory instance not found");
+                return false;
+            }
+
+            bool removedFromInventory =
+                Inventory.Instance.TryClearSlot(inventorySlotIndex);
+
+            if (!removedFromInventory)
+                return false;
+        }
+
+        tableItem.DestroySelf();
+
+        CreateTableItem(
+            result,
+            resultPosition,
+            shouldReturnToInventoryOnClose: true
+        );
+
+        if (resultText != null)
+            resultText.text = "Created: " + result.DisplayName;
 
         return true;
     }
@@ -170,8 +278,6 @@ public sealed class CraftingPanelUI : MonoBehaviour
                     return false;
             }
 
-            // Если это Clay или другой элемент с DiscardOnTableClose,
-            // он просто уничтожается и не возвращается в инвентарь.
             item.DestroySelf();
         }
 
@@ -203,6 +309,38 @@ public sealed class CraftingPanelUI : MonoBehaviour
         return count;
     }
 
+    private void ForcePanelRect()
+    {
+        RectTransform rectTransform = transform as RectTransform;
+
+        if (rectTransform == null)
+            return;
+
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchoredPosition = panelPosition;
+        rectTransform.sizeDelta = panelSize;
+    }
+
+    private void MarkOpened()
+    {
+        if (isOpen)
+            return;
+
+        isOpen = true;
+        openPanelCount++;
+    }
+
+    private void MarkClosed()
+    {
+        if (!isOpen)
+            return;
+
+        isOpen = false;
+        openPanelCount = Mathf.Max(0, openPanelCount - 1);
+    }
+
     private void BuildUI()
     {
         isBuilt = true;
@@ -217,8 +355,8 @@ public sealed class CraftingPanelUI : MonoBehaviour
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
             pivot: new Vector2(0.5f, 1f),
-            anchoredPosition: new Vector2(0f, -14f),
-            sizeDelta: new Vector2(650f, 40f)
+            anchoredPosition: titlePosition,
+            sizeDelta: titleSize
         );
 
         GameObject tableObject = new GameObject("FreeTableArea");
@@ -228,11 +366,11 @@ public sealed class CraftingPanelUI : MonoBehaviour
         tableRect.anchorMin = new Vector2(0.5f, 0.5f);
         tableRect.anchorMax = new Vector2(0.5f, 0.5f);
         tableRect.pivot = new Vector2(0.5f, 0.5f);
-        tableRect.anchoredPosition = Vector2.zero;
-        tableRect.sizeDelta = new Vector2(620f, 320f);
+        tableRect.anchoredPosition = tableAreaPosition;
+        tableRect.sizeDelta = tableAreaSize;
 
         Image tableImage = tableObject.AddComponent<Image>();
-        tableImage.color = new Color(0.08f, 0.08f, 0.08f, 0.95f);
+        tableImage.color = tableAreaColor;
         tableImage.raycastTarget = true;
 
         tableArea = tableObject.transform as RectTransform;
@@ -249,8 +387,8 @@ public sealed class CraftingPanelUI : MonoBehaviour
             anchorMin: new Vector2(0.5f, 0f),
             anchorMax: new Vector2(0.5f, 0f),
             pivot: new Vector2(0.5f, 0f),
-            anchoredPosition: new Vector2(0f, 18f),
-            sizeDelta: new Vector2(620f, 40f)
+            anchoredPosition: resultTextPosition,
+            sizeDelta: resultTextSize
         );
 
         Button closeButton = UIFactory.CreateButton(
@@ -260,8 +398,8 @@ public sealed class CraftingPanelUI : MonoBehaviour
             anchorMin: new Vector2(1f, 1f),
             anchorMax: new Vector2(1f, 1f),
             pivot: new Vector2(1f, 1f),
-            anchoredPosition: new Vector2(-10f, -10f),
-            sizeDelta: new Vector2(36f, 36f)
+            anchoredPosition: closeButtonPosition,
+            sizeDelta: closeButtonSize
         );
 
         closeButton.onClick.AddListener(Close);
