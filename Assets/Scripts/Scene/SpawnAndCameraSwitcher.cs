@@ -27,7 +27,7 @@ public class SpawnAndCameraSwitcher : MonoBehaviour
     private void Start()
     {
         Debug.Log("Start");
-        ApplyState(currentIndex);        
+        ApplyState(currentIndex);
     }
 
     /// <summary> Вызывается при наступлении события (UI, триггер, анимация и т.д.) </summary>
