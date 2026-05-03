@@ -3,7 +3,22 @@ guid: 635675e8836c1364c8b3b8c3f39fda85
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Brick-Floor-Blue
+    second: {fileID: 2100000, guid: 4c7691cf4f1d83542b1c25e68b971429, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Brick-Wall-Blue
+    second: {fileID: 2100000, guid: f5bfb6b9853184f40b46d075aba93894, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: table
+    second: {fileID: 2100000, guid: dd6d54a7dc651134cb5334030e301fc2, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
