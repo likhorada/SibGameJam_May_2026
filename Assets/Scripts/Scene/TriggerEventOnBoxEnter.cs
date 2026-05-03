@@ -1,10 +1,12 @@
+using System;
 using UnityEngine;
+using UnityEngine.Events;
 
 [RequireComponent(typeof(BoxCollider))]
 public class TriggerEventOnBoxEnter : MonoBehaviour
 {
     [Header("Кого уведомлять")]
-    [SerializeField] private SpawnAndCameraSwitcher switcher;
+    [SerializeField] private UnityEvent onEnter = new UnityEvent();
 
     [Header("Фильтр по объекту")]
     [SerializeField] private bool onlyPlayerTag = true;
@@ -21,22 +23,13 @@ public class TriggerEventOnBoxEnter : MonoBehaviour
         box.isTrigger = true;
     }
 
-    private void Awake()
-    {
-        if (switcher == null)
-        {
-            switcher = FindFirstObjectByType<SpawnAndCameraSwitcher>();
-        }
-    }
-
     private void OnTriggerEnter(Collider other)
     {
         if (_wasTriggered && singleUse) return;
-        if (switcher == null) return;
 
         if (onlyPlayerTag && !other.CompareTag(playerTag)) return;
 
-        switcher.TriggerEvent();
+        onEnter?.Invoke();
         _wasTriggered = true;
     }
 }
