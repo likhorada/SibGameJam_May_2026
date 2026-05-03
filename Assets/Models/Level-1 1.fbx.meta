@@ -3,7 +3,37 @@ guid: 2649302f03a90454b8cb2fca506d7c41
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Brick-Floor
+    second: {fileID: 2100000, guid: ada9a80bd702d6348ba3d1091d08800b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Brick-Wall
+    second: {fileID: 2100000, guid: 320ac9e62cbe39640862baab0ac1e1ac, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Chair
+    second: {fileID: 2100000, guid: 64b99406a71e2144e8dccae5c6f5f4dc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Knob
+    second: {fileID: 2100000, guid: f696c8bca89ecd04f8e1fa3a3af5288b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material
+    second: {fileID: 2100000, guid: 782352b8564bc0a42b3f4d4069c67cce, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: table
+    second: {fileID: 2100000, guid: 13a0c44715c007a45bd5730f377bdac8, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
