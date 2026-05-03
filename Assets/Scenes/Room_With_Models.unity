@@ -1184,6 +1184,10 @@ PrefabInstance:
       propertyPath: m_Resource
       value: 
       objectReference: {fileID: 8300000, guid: c77c551847ee37f4a87161cbe75e9b64, type: 3}
+    - target: {fileID: 3364891145142998819, guid: f65980545515e7e43819fd8eb48c1673, type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6170005609393247635, guid: f65980545515e7e43819fd8eb48c1673, type: 3}
       propertyPath: m_Name
       value: Background Music
@@ -2488,6 +2492,10 @@ PrefabInstance:
       propertyPath: m_Resource
       value: 
       objectReference: {fileID: 8300000, guid: aae442cda22ad1c44a50bf4ca4aacdcb, type: 3}
+    - target: {fileID: 3364891145142998819, guid: f65980545515e7e43819fd8eb48c1673, type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6170005609393247635, guid: f65980545515e7e43819fd8eb48c1673, type: 3}
       propertyPath: m_Name
       value: Background Music
@@ -2810,6 +2818,10 @@ PrefabInstance:
       propertyPath: m_Resource
       value: 
       objectReference: {fileID: 8300000, guid: e0ac11e5e5c92574f8b51507bca6066a, type: 3}
+    - target: {fileID: 3364891145142998819, guid: f65980545515e7e43819fd8eb48c1673, type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6170005609393247635, guid: f65980545515e7e43819fd8eb48c1673, type: 3}
       propertyPath: m_Name
       value: Background Music
@@ -4031,6 +4043,33 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!1 &1399162350 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1647172952388297104, guid: 6c68b070cc0c2b7459b46097a1e8b66d, type: 3}
+  m_PrefabInstance: {fileID: 1772690516}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &1399162354
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1399162350}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 5349113789292950873, guid: 6c68b070cc0c2b7459b46097a1e8b66d, type: 3}
 --- !u!1 &1428856621
 GameObject:
   m_ObjectHideFlags: 0
@@ -4222,6 +4261,10 @@ PrefabInstance:
       propertyPath: m_Resource
       value: 
       objectReference: {fileID: 8300000, guid: e0ac11e5e5c92574f8b51507bca6066a, type: 3}
+    - target: {fileID: 3364891145142998819, guid: f65980545515e7e43819fd8eb48c1673, type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6170005609393247635, guid: f65980545515e7e43819fd8eb48c1673, type: 3}
       propertyPath: m_Name
       value: Background Music
@@ -4427,6 +4470,10 @@ PrefabInstance:
       propertyPath: m_Resource
       value: 
       objectReference: {fileID: 8300000, guid: 1ca66050e83a21f4cb19704481d529ac, type: 3}
+    - target: {fileID: 3364891145142998819, guid: f65980545515e7e43819fd8eb48c1673, type: 3}
+      propertyPath: m_PlayOnAwake
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6170005609393247635, guid: f65980545515e7e43819fd8eb48c1673, type: 3}
       propertyPath: m_Name
       value: Background Music
@@ -4829,7 +4876,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1647172952388297104, guid: 6c68b070cc0c2b7459b46097a1e8b66d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1399162354}
   m_SourcePrefab: {fileID: 100100000, guid: 6c68b070cc0c2b7459b46097a1e8b66d, type: 3}
 --- !u!1 &1799028465
 GameObject:
@@ -5825,6 +5875,10 @@ PrefabInstance:
     - target: {fileID: 2069829488641372508, guid: f92c70b6db55f02489934856ea22e826, type: 3}
       propertyPath: m_Name
       value: PlayerGolem
+      objectReference: {fileID: 0}
+    - target: {fileID: 2069829488641372508, guid: f92c70b6db55f02489934856ea22e826, type: 3}
+      propertyPath: m_TagString
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 2890365970217271987, guid: f92c70b6db55f02489934856ea22e826, type: 3}
       propertyPath: m_LocalPosition.x
