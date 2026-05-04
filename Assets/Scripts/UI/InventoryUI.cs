@@ -157,6 +157,7 @@ public sealed class InventoryUI : MonoBehaviour
         iconRect.sizeDelta = new Vector2(48f, 48f);
 
         icon = iconObject.AddComponent<Image>();
+        icon.preserveAspect = true;
         icon.raycastTarget = false;
         icon.enabled = false;
 

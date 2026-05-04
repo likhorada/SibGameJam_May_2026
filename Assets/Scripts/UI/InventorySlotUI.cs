@@ -8,6 +8,9 @@ using UnityEngine.UI;
 /// </summary>
 public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
+    private static readonly Color SlotBackgroundColor = new Color(0.18f, 0.18f, 0.18f, 1f);
+    private static readonly Color TransparentColor = new Color(0f, 0f, 0f, 0f);
+
     private int slotIndex;
     private bool isPermanentElementSlot;
 
@@ -138,7 +141,9 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         }
 
         label.text = element.DisplayName;
-        background.color = element.FallbackColor;
+
+        if (background != null)
+            background.color = SlotBackgroundColor;
 
         if (icon == null)
             return;
@@ -146,6 +151,7 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         if (element.Icon != null)
         {
             icon.sprite = element.Icon;
+            icon.preserveAspect = true;
             icon.color = Color.white;
             icon.enabled = true;
         }
@@ -164,7 +170,7 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
             label.text = "Empty";
 
         if (background != null)
-            background.color = new Color(0.18f, 0.18f, 0.18f, 1f);
+            background.color = SlotBackgroundColor;
 
         if (icon != null)
         {
@@ -179,14 +185,30 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         dragGhost.transform.SetParent(rootCanvas.transform, false);
 
         dragGhostRect = dragGhost.AddComponent<RectTransform>();
-        dragGhostRect.sizeDelta = new Vector2(120f, 80f);
+        dragGhostRect.sizeDelta = new Vector2(110f, 90f);
 
-        Image image = dragGhost.AddComponent<Image>();
-        image.color = element.FallbackColor;
-        image.raycastTarget = false;
+        Image backgroundImage = dragGhost.AddComponent<Image>();
+        backgroundImage.color = TransparentColor;
+        backgroundImage.raycastTarget = false;
 
         if (element.Icon != null)
-            image.sprite = element.Icon;
+        {
+            GameObject iconObject = new GameObject("Icon");
+            iconObject.transform.SetParent(dragGhost.transform, false);
+
+            RectTransform iconRect = iconObject.AddComponent<RectTransform>();
+            iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+            iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+            iconRect.pivot = new Vector2(0.5f, 0.5f);
+            iconRect.anchoredPosition = new Vector2(0f, 10f);
+            iconRect.sizeDelta = new Vector2(48f, 48f);
+
+            Image iconImage = iconObject.AddComponent<Image>();
+            iconImage.sprite = element.Icon;
+            iconImage.preserveAspect = true;
+            iconImage.color = Color.white;
+            iconImage.raycastTarget = false;
+        }
 
         Text text = UIFactory.CreateText(
             parent: dragGhost.transform,

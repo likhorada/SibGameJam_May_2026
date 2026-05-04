@@ -21,10 +21,26 @@ public sealed class TableDropArea : MonoBehaviour, IDropHandler
         if (!DragContext.HasActiveDrag)
             return;
 
-        Vector2 localPoint = GetLocalPoint(eventData);
+        if (craftingPanel == null)
+        {
+            Debug.LogError("TableDropArea: CraftingPanelUI is not configured");
+            return;
+        }
+
+        if (DragContext.Element == null)
+            return;
+
+        if (!TryGetLocalPoint(eventData, out Vector2 localPoint))
+            return;
 
         if (DragContext.SourceType == DragSourceType.InventorySlot)
         {
+            if (Inventory.Instance == null)
+            {
+                Debug.LogError("TableDropArea: Inventory instance not found");
+                return;
+            }
+
             bool removedFromInventory = Inventory.Instance.TryClearSlot(DragContext.InventorySlotIndex);
 
             if (!removedFromInventory)
@@ -57,20 +73,31 @@ public sealed class TableDropArea : MonoBehaviour, IDropHandler
 
         if (DragContext.SourceType == DragSourceType.TableItem)
         {
-            DragContext.TableItem.AttachToTable(localPoint);
+            TableItemUI tableItem = DragContext.TableItem;
+
+            if (tableItem == null)
+                return;
+
+            tableItem.AttachToTable(localPoint);
             DragContext.MarkHandled();
         }
     }
 
-    private Vector2 GetLocalPoint(PointerEventData eventData)
+    private bool TryGetLocalPoint(PointerEventData eventData, out Vector2 localPoint)
     {
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+        localPoint = Vector2.zero;
+
+        if (rectTransform == null)
+        {
+            Debug.LogError("TableDropArea: RectTransform is missing");
+            return false;
+        }
+
+        return RectTransformUtility.ScreenPointToLocalPointInRectangle(
             rectTransform,
             eventData.position,
             eventData.pressEventCamera,
-            out Vector2 localPoint
+            out localPoint
         );
-
-        return localPoint;
     }
 }

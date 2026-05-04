@@ -1842,6 +1842,14 @@ PrefabInstance:
       propertyPath: tableAreaSize.y
       value: 800
       objectReference: {fileID: 0}
+    - target: {fileID: 4084506203678653899, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: tableItemSize.x
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 4084506203678653899, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: tableItemSize.y
+      value: 120
+      objectReference: {fileID: 0}
     - target: {fileID: 4274043323569117467, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -4232,6 +4240,72 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e368094097890e4a8e5623ee4ab977d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CraftingPanelUI
+--- !u!1 &910001000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 910001001}
+  - component: {fileID: 910001002}
+  - component: {fileID: 910001003}
+  m_Layer: 0
+  m_Name: GameOver
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &910001001
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910001000}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -2.10418, y: 0, z: 3.1887}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1658245301}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &910001002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910001000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1d8e79f74e94a10b6d0a5f9c4e8b112, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::GameOverController
+  rootCanvas: {fileID: 1799028469}
+  titleText: GAME OVER
+  messageText: The golem was destroyed by the explosion.
+  restartButtonText: Restart
+  backdropColor: {r: 0.04, g: 0.025, b: 0.02, a: 0.92}
+  pauseGameOnGameOver: 1
+--- !u!114 &910001003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910001000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2f4c0d19e764a6ba80a2f6f30ec9c35, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::CraftGameOverTrigger
+  roomId: room_02
+  gameOverElement: {fileID: 11400000, guid: 6475b44f642e4bba8789b10294b1e0e7, type: 2}
+  gameOverController: {fileID: 910001002}
 --- !u!1 &920524884
 GameObject:
   m_ObjectHideFlags: 0
@@ -5390,6 +5464,14 @@ PrefabInstance:
     - target: {fileID: 4084506203678653899, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
       propertyPath: tableAreaSize.y
       value: 800
+      objectReference: {fileID: 0}
+    - target: {fileID: 4084506203678653899, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: tableItemSize.x
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 4084506203678653899, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: tableItemSize.y
+      value: 120
       objectReference: {fileID: 0}
     - target: {fileID: 4084506203678653899, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
       propertyPath: tableAreaColor.b
@@ -6746,6 +6828,7 @@ Transform:
   - {fileID: 1648937093}
   - {fileID: 361513912}
   - {fileID: 148961157}
+  - {fileID: 910001001}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1757371763
@@ -7909,6 +7992,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: CraftingPanel3
       objectReference: {fileID: 0}
+    - target: {fileID: 4084506203678653899, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: panelSize.x
+      value: 1550
+      objectReference: {fileID: 0}
+    - target: {fileID: 4084506203678653899, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: panelSize.y
+      value: 950
+      objectReference: {fileID: 0}
+    - target: {fileID: 4084506203678653899, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: tableAreaSize.x
+      value: 1400
+      objectReference: {fileID: 0}
+    - target: {fileID: 4084506203678653899, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: tableAreaSize.y
+      value: 800
+      objectReference: {fileID: 0}
+    - target: {fileID: 4084506203678653899, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: tableItemSize.x
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 4084506203678653899, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: tableItemSize.y
+      value: 120
+      objectReference: {fileID: 0}
     - target: {fileID: 4274043323569117467, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -7940,6 +8047,18 @@ PrefabInstance:
     - target: {fileID: 4274043323569117467, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
       propertyPath: m_SizeDelta.y
       value: 430
+      objectReference: {fileID: 0}
+    - target: {fileID: 4274043323569117467, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4274043323569117467, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4274043323569117467, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4274043323569117467, guid: 853767b4bd1c6c64b9541fa2dd14a2c8, type: 3}
       propertyPath: m_LocalPosition.x

@@ -20,6 +20,12 @@ public sealed class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        if (GameOverController.IsGameOver)
+        {
+            inputDirection = Vector3.zero;
+            return;
+        }
+
         if (CraftingPanelUI.HasOpenPanel)
         {
             inputDirection = Vector3.zero;

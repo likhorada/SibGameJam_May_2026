@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +17,8 @@ public sealed class CraftingPanelUI : MonoBehaviour
     {
         get { return openPanelCount > 0; }
     }
+
+    public static event Action<string, string, ElementDefinition> ElementCrafted;
 
     [Header("Panel Layout")]
     [SerializeField] private Vector2 panelSize = new Vector2(1050f, 650f);
@@ -175,6 +178,8 @@ public sealed class CraftingPanelUI : MonoBehaviour
         if (resultText != null)
             resultText.text = "Created: " + result.DisplayName;
 
+        NotifyElementCrafted(result);
+
         return true;
     }
 
@@ -234,6 +239,8 @@ public sealed class CraftingPanelUI : MonoBehaviour
 
         if (resultText != null)
             resultText.text = "Created: " + result.DisplayName;
+
+        NotifyElementCrafted(result);
 
         return true;
     }
@@ -339,6 +346,11 @@ public sealed class CraftingPanelUI : MonoBehaviour
 
         isOpen = false;
         openPanelCount = Mathf.Max(0, openPanelCount - 1);
+    }
+
+    private void NotifyElementCrafted(ElementDefinition result)
+    {
+        ElementCrafted?.Invoke(currentTableId, currentRoomId, result);
     }
 
     private void BuildUI()

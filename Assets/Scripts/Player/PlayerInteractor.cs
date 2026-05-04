@@ -12,6 +12,9 @@ public sealed class PlayerInteractor : MonoBehaviour
 
     private void Update()
     {
+        if (GameOverController.IsGameOver)
+            return;
+
         if (CraftingPanelUI.HasOpenPanel)
             return;
 

@@ -21,8 +21,8 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
     public ElementDefinition Element { get; private set; }
 
     /// <summary>
-    /// true — элемент вернётся в инвентарь при закрытии стола.
-    /// false — элемент исчезнет при закрытии стола.
+    /// true - элемент вернётся в инвентарь при закрытии стола.
+    /// false - элемент исчезнет при закрытии стола.
     /// </summary>
     public bool ShouldReturnToInventoryOnClose { get; private set; }
 
@@ -48,9 +48,13 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
 
         Image image = GetComponent<Image>();
         image.color = element.FallbackColor;
+        image.preserveAspect = true;
 
         if (element.Icon != null)
+        {
             image.sprite = element.Icon;
+            image.color = Color.white;
+        }
 
         Text label = UIFactory.CreateText(
             parent: transform,
@@ -93,16 +97,16 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
     public void OnBeginDrag(PointerEventData eventData)
     {
         previousTablePosition = rectTransform.anchoredPosition;
+        Vector3 dragScale = GetScaleRelativeToRootCanvas();
 
         DragContext.BeginFromTable(this, Element);
 
         canvasGroup.blocksRaycasts = false;
 
-        // Важно: не сохраняем world scale при переносе в Canvas.
-        // Иначе после возврата элемент может стать меньше/больше.
         transform.SetParent(rootCanvas.transform, false);
 
         ResetRectTransform();
+        rectTransform.localScale = dragScale;
         MoveToPointer(eventData);
     }
 
@@ -193,5 +197,30 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
         rectTransform.localScale = Vector3.one;
         rectTransform.localRotation = Quaternion.identity;
         rectTransform.sizeDelta = originalSizeDelta;
+    }
+
+    private Vector3 GetScaleRelativeToRootCanvas()
+    {
+        if (rootCanvas == null)
+            return Vector3.one;
+
+        Transform canvasTransform = rootCanvas.transform;
+        Transform current = transform;
+        Vector3 scale = Vector3.one;
+
+        while (current != null && current != canvasTransform)
+        {
+            scale = Vector3.Scale(scale, current.localScale);
+            current = current.parent;
+        }
+
+        if (Mathf.Approximately(scale.x, 0f)
+            || Mathf.Approximately(scale.y, 0f)
+            || Mathf.Approximately(scale.z, 0f))
+        {
+            return Vector3.one;
+        }
+
+        return scale;
     }
 }
