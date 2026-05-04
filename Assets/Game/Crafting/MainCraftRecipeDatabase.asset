@@ -14,18 +14,98 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CraftRecipeDatabase
   recipes:
   - roomId: room_01
-    inputA: {fileID: 11400000, guid: eb27429e9f9be8b4e9fcbf42d0a77703, type: 2}
-    inputB: {fileID: 11400000, guid: 74017c2505dd4f040a7f63c1069d5f49, type: 2}
+    inputA: {fileID: 11400000, guid: b1e3e73f6e5eabd4dac9201d8a243ef0, type: 2}
+    inputB: {fileID: 11400000, guid: 0acce3d8cae72c34a9a03a58f252320c, type: 2}
+    result: {fileID: 11400000, guid: 8a9080d7006e4e698adfc703406b3fdb, type: 2}
+  - roomId: room_01
+    inputA: {fileID: 11400000, guid: 8a9080d7006e4e698adfc703406b3fdb, type: 2}
+    inputB: {fileID: 11400000, guid: eb27429e9f9be8b4e9fcbf42d0a77703, type: 2}
+    result: {fileID: 11400000, guid: 779ea429dbc7461baa894959ffc847fe, type: 2}
+  - roomId: room_01
+    inputA: {fileID: 11400000, guid: 779ea429dbc7461baa894959ffc847fe, type: 2}
+    inputB: {fileID: 11400000, guid: 78fed89a26304f988ec1dfb0a8729bcc, type: 2}
     result: {fileID: 11400000, guid: a0c04dbe062da6e438162d992751d6e6, type: 2}
-  - roomId: room_02
-    inputA: {fileID: 11400000, guid: eb27429e9f9be8b4e9fcbf42d0a77703, type: 2}
-    inputB: {fileID: 11400000, guid: ef90c3302f58bc8488afc912ba041154, type: 2}
-    result: {fileID: 11400000, guid: 74017c2505dd4f040a7f63c1069d5f49, type: 2}
+  - roomId: room_01
+    inputA: {fileID: 11400000, guid: b1e3e73f6e5eabd4dac9201d8a243ef0, type: 2}
+    inputB: {fileID: 11400000, guid: 121c3aee90674c77b80bbd618a38d183, type: 2}
+    result: {fileID: 11400000, guid: a739fc9a3a894341a7c7219897efc7a1, type: 2}
   - roomId: room_01
     inputA: {fileID: 11400000, guid: 74017c2505dd4f040a7f63c1069d5f49, type: 2}
-    inputB: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
-    result: {fileID: 11400000, guid: eb27429e9f9be8b4e9fcbf42d0a77703, type: 2}
-  - roomId: room_01
-    inputA: {fileID: 11400000, guid: eb27429e9f9be8b4e9fcbf42d0a77703, type: 2}
     inputB: {fileID: 11400000, guid: ef90c3302f58bc8488afc912ba041154, type: 2}
-    result: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
+    result: {fileID: 11400000, guid: 44e6f52c6f284e298cd4644142d68c03, type: 2}
+  - roomId: room_01
+    inputA: {fileID: 11400000, guid: 74017c2505dd4f040a7f63c1069d5f49, type: 2}
+    inputB: {fileID: 11400000, guid: eb27429e9f9be8b4e9fcbf42d0a77703, type: 2}
+    result: {fileID: 11400000, guid: 44e6f52c6f284e298cd4644142d68c03, type: 2}
+  - roomId: room_01
+    inputA: {fileID: 11400000, guid: 0acce3d8cae72c34a9a03a58f252320c, type: 2}
+    inputB: {fileID: 11400000, guid: ef90c3302f58bc8488afc912ba041154, type: 2}
+    result: {fileID: 11400000, guid: 777423f3ae794388afee78ec2c095d76, type: 2}
+  - roomId: room_01
+    inputA: {fileID: 11400000, guid: b1e3e73f6e5eabd4dac9201d8a243ef0, type: 2}
+    inputB: {fileID: 11400000, guid: ef90c3302f58bc8488afc912ba041154, type: 2}
+    result: {fileID: 11400000, guid: 5934fb4a1820413894092399016e7eb6, type: 2}
+  - roomId: room_01
+    inputA: {fileID: 11400000, guid: 779ea429dbc7461baa894959ffc847fe, type: 2}
+    inputB: {fileID: 11400000, guid: b1e3e73f6e5eabd4dac9201d8a243ef0, type: 2}
+    result: {fileID: 11400000, guid: d79ef88cd5344199be4a88a73d6ac658, type: 2}
+  - roomId: room_02
+    inputA: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
+    inputB: {fileID: 11400000, guid: 9c5134eb91874f1e92152226e249dc93, type: 2}
+    result: {fileID: 11400000, guid: dba58c4ea7834733905ae648b36d9a81, type: 2}
+  - roomId: room_02
+    inputA: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
+    inputB: {fileID: 11400000, guid: 8bf7566698c1459ab9a975db9293cbf3, type: 2}
+    result: {fileID: 11400000, guid: e3a67d53311d40f8acef912dae28d6ee, type: 2}
+  - roomId: room_02
+    inputA: {fileID: 11400000, guid: 74017c2505dd4f040a7f63c1069d5f49, type: 2}
+    inputB: {fileID: 11400000, guid: 9c5134eb91874f1e92152226e249dc93, type: 2}
+    result: {fileID: 11400000, guid: 6475b44f642e4bba8789b10294b1e0e7, type: 2}
+  - roomId: room_02
+    inputA: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
+    inputB: {fileID: 11400000, guid: ef90c3302f58bc8488afc912ba041154, type: 2}
+    result: {fileID: 11400000, guid: 70edef310b4b4ea3b3b6ee89ce8f2a20, type: 2}
+  - roomId: room_02
+    inputA: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
+    inputB: {fileID: 11400000, guid: bcddc1a483106564583b3a8ca8013dd4, type: 2}
+    result: {fileID: 11400000, guid: 3c03e4aa51a94c8ea1f80e88dbe380c2, type: 2}
+  - roomId: room_02
+    inputA: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
+    inputB: {fileID: 11400000, guid: 68d40ba6107f6e84a8d03d2a04d4fcfe, type: 2}
+    result: {fileID: 11400000, guid: 3c01e40b17f74824b40ebe1afca2e825, type: 2}
+  - roomId: room_02
+    inputA: {fileID: 11400000, guid: b1e3e73f6e5eabd4dac9201d8a243ef0, type: 2}
+    inputB: {fileID: 11400000, guid: 68d40ba6107f6e84a8d03d2a04d4fcfe, type: 2}
+    result: {fileID: 11400000, guid: 1fb117c5d2a74a239d0f22e3453639a0, type: 2}
+  - roomId: room_03
+    inputA: {fileID: 11400000, guid: 779ea429dbc7461baa894959ffc847fe, type: 2}
+    inputB: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
+    result: {fileID: 11400000, guid: 9020b270bb304d2fb76f8c808c5929e7, type: 2}
+  - roomId: room_03
+    inputA: {fileID: 11400000, guid: 9020b270bb304d2fb76f8c808c5929e7, type: 2}
+    inputB: {fileID: 11400000, guid: bb973c6cbdd94a6ca02ccc07d409daa6, type: 2}
+    result: {fileID: 11400000, guid: e323d7e0ad2649a6aa8960fd68e483f9, type: 2}
+  - roomId: room_03
+    inputA: {fileID: 11400000, guid: e3a67d53311d40f8acef912dae28d6ee, type: 2}
+    inputB: {fileID: 11400000, guid: 4b6950efd36c4fbbad2a748b678e970b, type: 2}
+    result: {fileID: 11400000, guid: 700fbe99f72440018b3bf147d826fb2e, type: 2}
+  - roomId: room_03
+    inputA: {fileID: 11400000, guid: 74017c2505dd4f040a7f63c1069d5f49, type: 2}
+    inputB: {fileID: 11400000, guid: bb973c6cbdd94a6ca02ccc07d409daa6, type: 2}
+    result: {fileID: 11400000, guid: 44e6f52c6f284e298cd4644142d68c03, type: 2}
+  - roomId: room_03
+    inputA: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
+    inputB: {fileID: 11400000, guid: 8bf7566698c1459ab9a975db9293cbf3, type: 2}
+    result: {fileID: 11400000, guid: 8870bde882d3492fa643ceeb401262a5, type: 2}
+  - roomId: room_03
+    inputA: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
+    inputB: {fileID: 11400000, guid: bb973c6cbdd94a6ca02ccc07d409daa6, type: 2}
+    result: {fileID: 11400000, guid: 8d3a2b03572c4831b8dcce08025ecc13, type: 2}
+  - roomId: room_03
+    inputA: {fileID: 11400000, guid: 0e8b1ebebf3f7924e88236173f70aa84, type: 2}
+    inputB: {fileID: 11400000, guid: 4aee93b4c20a45f2b02282379cd13357, type: 2}
+    result: {fileID: 11400000, guid: ea9838f72f9d4604a4c437888bccb176, type: 2}
+  - roomId: room_03
+    inputA: {fileID: 11400000, guid: 9020b270bb304d2fb76f8c808c5929e7, type: 2}
+    inputB: {fileID: 11400000, guid: 4aee93b4c20a45f2b02282379cd13357, type: 2}
+    result: {fileID: 11400000, guid: 318a335157d548e0b30138f42f919b05, type: 2}
