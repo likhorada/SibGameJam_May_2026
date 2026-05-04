@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ElementDefinition
   id: fire
   displayName: Fire
-  icon: {fileID: 21300000, guid: 10154ac53a4d4e6ca7dc958c79f97b1d, type: 3}
+  icon: {fileID: 21300000, guid: 4a9323d167290e54b98a8989dd351b28, type: 3}
   fallbackColor: {r: 0.9622642, g: 0.66673434, b: 0.041758526, a: 1}
   worldPrefab: {fileID: 0}
   worldScale: {x: 1, y: 1, z: 1}

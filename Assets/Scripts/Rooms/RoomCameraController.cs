@@ -6,8 +6,34 @@ using UnityEngine;
 /// </summary>
 public sealed class RoomCameraController : MonoBehaviour
 {
+    [System.Serializable]
+    private sealed class CameraTransitionRule
+    {
+        [Tooltip("CameraPoint, from which the transition starts.")]
+        public Transform fromCameraPoint;
+
+        [Tooltip("CameraPoint, to which the transition goes.")]
+        public Transform toCameraPoint;
+
+        [Tooltip("Transition mode for this exact pair.")]
+        public CameraTransitionMode transitionMode = CameraTransitionMode.Snap;
+    }
+
+    public enum CameraTransitionMode
+    {
+        Smooth,
+        Snap
+    }
+
     [Header("Camera")]
     [SerializeField] private Camera targetCamera;
+
+    [Header("Transition")]
+    [Tooltip("Used when no rule matches the current CameraPoint and target CameraPoint.")]
+    [SerializeField] private CameraTransitionMode transitionMode = CameraTransitionMode.Snap;
+
+    [Tooltip("Optional exact from/to overrides for camera transitions.")]
+    [SerializeField] private CameraTransitionRule[] transitionRules = new CameraTransitionRule[0];
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 6f;
@@ -21,11 +47,14 @@ public sealed class RoomCameraController : MonoBehaviour
     [SerializeField] private bool logCameraMoves = true;
 
     private Transform currentCameraPoint;
+    private CameraTransitionMode currentTransitionMode;
 
     private void Awake()
     {
         if (targetCamera == null)
             targetCamera = Camera.main;
+
+        currentTransitionMode = transitionMode;
     }
 
     private void Start()
@@ -42,6 +71,12 @@ public sealed class RoomCameraController : MonoBehaviour
             return;
 
         Transform cameraTransform = targetCamera.transform;
+
+        if (currentTransitionMode == CameraTransitionMode.Snap)
+        {
+            SnapCameraTransform(cameraTransform, currentCameraPoint);
+            return;
+        }
 
         cameraTransform.position = Vector3.Lerp(
             cameraTransform.position,
@@ -64,10 +99,19 @@ public sealed class RoomCameraController : MonoBehaviour
             return;
         }
 
+        CameraTransitionMode nextTransitionMode = GetTransitionMode(currentCameraPoint, cameraPoint);
+
         currentCameraPoint = cameraPoint;
+        currentTransitionMode = nextTransitionMode;
+
+        if (currentTransitionMode == CameraTransitionMode.Snap)
+        {
+            SnapToCameraPoint(cameraPoint);
+            return;
+        }
 
         if (logCameraMoves)
-            Debug.Log("RoomCameraController: moving to " + cameraPoint.name);
+            Debug.Log("RoomCameraController: moving to " + cameraPoint.name + " using " + currentTransitionMode);
     }
 
     public void SnapToCameraPoint(Transform cameraPoint)
@@ -84,12 +128,37 @@ public sealed class RoomCameraController : MonoBehaviour
             return;
         }
 
-        targetCamera.transform.position = cameraPoint.position;
-        targetCamera.transform.rotation = cameraPoint.rotation;
+        SnapCameraTransform(targetCamera.transform, cameraPoint);
 
         currentCameraPoint = cameraPoint;
+        currentTransitionMode = CameraTransitionMode.Snap;
 
         if (logCameraMoves)
             Debug.Log("RoomCameraController: snapped to " + cameraPoint.name);
+    }
+
+    private CameraTransitionMode GetTransitionMode(Transform fromCameraPoint, Transform toCameraPoint)
+    {
+        if (fromCameraPoint == null || toCameraPoint == null)
+            return transitionMode;
+
+        for (int i = 0; i < transitionRules.Length; i++)
+        {
+            CameraTransitionRule rule = transitionRules[i];
+
+            if (rule == null)
+                continue;
+
+            if (rule.fromCameraPoint == fromCameraPoint && rule.toCameraPoint == toCameraPoint)
+                return rule.transitionMode;
+        }
+
+        return transitionMode;
+    }
+
+    private static void SnapCameraTransform(Transform cameraTransform, Transform cameraPoint)
+    {
+        cameraTransform.position = cameraPoint.position;
+        cameraTransform.rotation = cameraPoint.rotation;
     }
 }
