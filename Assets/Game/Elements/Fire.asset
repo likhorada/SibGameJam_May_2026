@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Fire
   icon: {fileID: 21300000, guid: 4a9323d167290e54b98a8989dd351b28, type: 3}
   fallbackColor: {r: 0.9622642, g: 0.66673434, b: 0.041758526, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 72d26dac7cd9ece31650ae258592184c, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

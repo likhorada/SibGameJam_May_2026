@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Flint
   icon: {fileID: 21300000, guid: 757ad8155fd4446ba52aa8bbb2519201, type: 3}
   fallbackColor: {r: 0.16226411, g: 0.12215732, b: 0.12215732, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 7900319c5f47a03868e7dab4fef6a7aa, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

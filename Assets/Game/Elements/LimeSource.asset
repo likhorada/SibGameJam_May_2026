@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Lime
   icon: {fileID: 21300000, guid: 044697e4ef1c400fbaf698c385a59a21, type: 3}
   fallbackColor: {r: 0.7058824, g: 0.7372549, b: 0.21568629, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 38e72d36c0ab9eb5fd06b489f9d54583, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.Events;
 
 /// <summary>
 /// Некрафтовый стол-пьедестал.
@@ -13,9 +15,15 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
     [Header("Spawn Points")]
     [SerializeField] private Transform[] itemAnchors = new Transform[3];
 
+    [Header("Spawn Behavior")]
+    [SerializeField] private bool spawnedVisualsFollowAnchors = true;
+
     [Header("Fallback Visual")]
     [SerializeField] private Vector3 fallbackCubeScale = new Vector3(0.35f, 0.35f, 0.35f);
     [SerializeField] private float fallbackVerticalOffset = 0.35f;
+
+    [Header("Completion")]
+    [SerializeField] private UnityEvent onCompleted = new UnityEvent();
 
     private bool[] placed;
     private GameObject[] spawnedVisuals;
@@ -24,6 +32,8 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
     {
         get { return "Press E to place required item"; }
     }
+
+    public event Action Completed;
 
     private void Awake()
     {
@@ -128,18 +138,15 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
 
         if (element.WorldPrefab != null)
         {
-            visual = Instantiate(element.WorldPrefab, anchor.position, anchor.rotation, anchor);
-            visual.transform.localPosition = Vector3.zero;
-            visual.transform.localRotation = Quaternion.identity;
+            visual = Instantiate(element.WorldPrefab, anchor.position, anchor.rotation);
             visual.transform.localScale = element.WorldScale;
         }
         else
         {
             visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
             visual.name = "Visual_" + element.Id;
-            visual.transform.SetParent(anchor, false);
-            visual.transform.localPosition = Vector3.zero;
-            visual.transform.localRotation = Quaternion.identity;
+            visual.transform.position = anchor.position;
+            visual.transform.rotation = anchor.rotation;
             visual.transform.localScale = fallbackCubeScale;
 
             Renderer renderer = visual.GetComponent<Renderer>();
@@ -148,7 +155,21 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
                 renderer.material.color = element.FallbackColor;
         }
 
+        AttachAnchorFollower(visual, anchor);
         spawnedVisuals[index] = visual;
+    }
+
+    private void AttachAnchorFollower(GameObject visual, Transform anchor)
+    {
+        if (!spawnedVisualsFollowAnchors || visual == null || anchor == null)
+            return;
+
+        FollowTransform follower = visual.GetComponent<FollowTransform>();
+
+        if (follower == null)
+            follower = visual.AddComponent<FollowTransform>();
+
+        follower.Initialize(anchor);
     }
 
     private Transform GetAnchor(int index)
@@ -194,6 +215,8 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
     private void OnCompleted()
     {
         Debug.Log(gameObject.name + ": offering table completed");
+        Completed?.Invoke();
+        onCompleted.Invoke();
 
         // Здесь позже можно:
         // - открыть проход;

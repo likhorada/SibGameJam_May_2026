@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Coal
   icon: {fileID: 21300000, guid: 9eadad0a77a4475ba711f29e97b980b2, type: 3}
   fallbackColor: {r: 0.85660374, g: 0, b: 0, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 111c4207d48c7e1438479e4f16924b2f, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

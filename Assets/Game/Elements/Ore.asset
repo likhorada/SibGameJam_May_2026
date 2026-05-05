@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Ore
   icon: {fileID: 21300000, guid: e784bc4e34244fb1972418622e98cd3f, type: 3}
   fallbackColor: {r: 0.46, g: 0.39, b: 0.34, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 377a79ccc3bde77ade9da3b55ecf0735, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

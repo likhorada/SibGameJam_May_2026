@@ -11,6 +11,11 @@
 .vs/
 .idea/
 .vscode/
+.dotnet/
+.dotnet_home/
+.netfx-reference-assemblies/
+Microsoft.NETFramework.ReferenceAssemblies.net471.*.nupkg
+dotnet-install.ps1
 *.csproj
 *.unityproj
 *.sln

@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Paint
   icon: {fileID: 21300000, guid: c27841b298c24dccadf3ae3193f05781, type: 3}
   fallbackColor: {r: 0.15, g: 0.2, b: 0.75, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 1d4b8347e6a287dc47617ff4e89f8812, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

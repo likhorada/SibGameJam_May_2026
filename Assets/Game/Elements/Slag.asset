@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Slag
   icon: {fileID: 21300000, guid: b60c43343e20415ab96fea00ba38e09e, type: 3}
   fallbackColor: {r: 0.14, g: 0.12, b: 0.11, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: f981d7e69f849a47f4c226c3817cc778, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

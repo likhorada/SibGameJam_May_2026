@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Elixir
   icon: {fileID: 21300000, guid: e1e6d4e7dcd34d03b477d28c9555dc37, type: 3}
   fallbackColor: {r: 0.48, g: 0.16, b: 0.8, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 824e3681f6c3f9c9e3f72992b4ee7d90, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

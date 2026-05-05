@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Vitriol
   icon: {fileID: 21300000, guid: 17da38872d26480aa02bb4e903eb6666, type: 3}
   fallbackColor: {r: 0.5773585, g: 0.44889334, b: 0.27778566, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: f5479ebd66994d1bd6af655be5f87277, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

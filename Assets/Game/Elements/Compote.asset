@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Compote
   icon: {fileID: 21300000, guid: 0e3ae86150104f349a895158a54fc60f, type: 3}
   fallbackColor: {r: 0.78, g: 0.22, b: 0.28, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: a61943b743c9a29acdcc8fb1ad069fe7, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

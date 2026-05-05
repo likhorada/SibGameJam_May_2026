@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Stone
   icon: {fileID: 21300000, guid: 9697522265ac4878b4ce00ca4b86917a, type: 3}
   fallbackColor: {r: 0.42, g: 0.43, b: 0.43, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: db6e016d11af9cfa1a8e6370f77164b8, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

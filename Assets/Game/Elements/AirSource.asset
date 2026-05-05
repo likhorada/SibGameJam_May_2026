@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Air
   icon: {fileID: 21300000, guid: 8d68afee60a7ee1418e5daf5b0dc3a4d, type: 3}
   fallbackColor: {r: 0.4943396, g: 0.45796365, b: 0.45796365, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: c59a1cd844329c9cf710a6995688ce54, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

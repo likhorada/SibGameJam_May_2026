@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Acid
   icon: {fileID: 21300000, guid: f17fc0b7249849b2a6ca4922d7add57e, type: 3}
   fallbackColor: {r: 0.55, g: 0.9, b: 0.14, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 0b24ed3506c2948b6ceb80161044ed7c, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

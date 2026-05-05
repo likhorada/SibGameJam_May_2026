@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Must
   icon: {fileID: 21300000, guid: 3a641fe4b1b64e95be83904117b790f4, type: 3}
   fallbackColor: {r: 0.64, g: 0.22, b: 0.22, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: b2c38b98d81cb154673819db14f8c101, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

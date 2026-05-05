@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Water
   icon: {fileID: 21300000, guid: 43afecd09fb7ba44e8dbd36581a60df3, type: 3}
   fallbackColor: {r: 0.18679237, g: 0.71429604, b: 1, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: c41e7c5a375078179f963791f67ff5aa, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

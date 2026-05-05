@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Tincture
   icon: {fileID: 21300000, guid: a61cfeebd9cf4b949dcfa919fdd3d9f7, type: 3}
   fallbackColor: {r: 0.18, g: 0.55, b: 0.29, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 3276f167ee4eecb5f9364741030e2413, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

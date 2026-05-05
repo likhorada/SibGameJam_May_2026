@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Poison
   icon: {fileID: 21300000, guid: a3c13111e1e64730b30819bf00cd3415, type: 3}
   fallbackColor: {r: 0.34, g: 0.75, b: 0.26, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: d808514f08b930b6d36de2b389ea667b, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

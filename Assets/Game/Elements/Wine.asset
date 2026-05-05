@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Wine
   icon: {fileID: 21300000, guid: 58c17140b7884528b7a4100d2dc6ff51, type: 3}
   fallbackColor: {r: 0.42, g: 0.04, b: 0.12, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 7432a525154100bb149064907eb91cb0, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

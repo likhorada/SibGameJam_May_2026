@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Chest
   icon: {fileID: 21300000, guid: 44ab00df00704f7881d69ca6ba05cb9d, type: 3}
   fallbackColor: {r: 0.49411765, g: 0.30588236, b: 0.14117648, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: ea2c6c57b3e1fcaeea89cb4ea4f99e36, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f2975433453aa249a683a73d1e2192f, type: 3}
+  m_Name: MagicWand
+  m_EditorClassIdentifier: Assembly-CSharp::ElementDefinition
+  id: magic_wand
+  displayName: Magic Wand
+  icon: {fileID: 21300000, guid: 5a94b7f12da64250a1f94b9f37389633, type: 3}
+  fallbackColor: {r: 0.8, g: 0.6, b: 0.3, a: 1}
+  worldPrefab: {fileID: 100000, guid: 1f042892de15609ca5574f4b9f705b1a, type: 3}
+  worldScale: {x: 1, y: 1, z: 1}
+  discardOnTableClose: 0

@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Gypsum
   icon: {fileID: 21300000, guid: fe1b0f2b88c84e059ef9fbe509c48e9b, type: 3}
   fallbackColor: {r: 0.86, g: 0.84, b: 0.76, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 3c7e063b58aae51dd94b51cdbd30f430, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

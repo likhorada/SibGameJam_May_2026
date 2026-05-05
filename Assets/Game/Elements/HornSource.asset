@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Horn
   icon: {fileID: 21300000, guid: 398af21cd0a149f7a821d0a0c7d86d1a, type: 3}
   fallbackColor: {r: 0.7921569, g: 0.7372549, b: 0.6117647, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 3e12267549249bd4fae5c2ae6294f21e, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

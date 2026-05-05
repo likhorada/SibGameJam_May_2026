@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Explosion GAMEOVER
   icon: {fileID: 21300000, guid: b4df8ac8c30f49de8cdd8bde79149498, type: 3}
   fallbackColor: {r: 1, g: 0.25, b: 0.06, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 5891c04a6ba99b20d2f65407568b3aa0, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

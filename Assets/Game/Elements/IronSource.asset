@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Iron
   icon: {fileID: 21300000, guid: 515bdcd046eb413381a0a2649ac4eb55, type: 3}
   fallbackColor: {r: 0.79622644, g: 0.79622644, b: 0.79622644, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 5215acbdd47f8d62d2c493dc68d7919a, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

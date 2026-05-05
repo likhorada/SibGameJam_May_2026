@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Torch
   icon: {fileID: 21300000, guid: b63e56bec9ed4794ae601720b7b068d5, type: 3}
   fallbackColor: {r: 0.9622642, g: 0.66673434, b: 0.041758526, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 0a66d1619ea519e6d28d930065e74d96, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

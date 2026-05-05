@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Herbs
   icon: {fileID: 21300000, guid: 3300657e9eb54a349662976ae88df285, type: 3}
   fallbackColor: {r: 0.23921569, g: 0.5294118, b: 0.19607843, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 144f7f1d4d21734b6b3fa658bbaef6a2, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

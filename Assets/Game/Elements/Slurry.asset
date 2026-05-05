@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Slurry
   icon: {fileID: 21300000, guid: 89ddeee5ce5b4b448aa037de2cddba41, type: 3}
   fallbackColor: {r: 0.37, g: 0.29, b: 0.22, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 430f987214759a1a14664b9d435f5fdc, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

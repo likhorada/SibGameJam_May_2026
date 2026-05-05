@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Wood
   icon: {fileID: 21300000, guid: adb6d607919f4648af3164e7c55e382c, type: 3}
   fallbackColor: {r: 0.4862745, g: 0.3019608, b: 0.13725491, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 946b3af792a72a8ba84ec7e41f0a463b, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Saltpeter
   icon: {fileID: 21300000, guid: f752c1a17bd441c8b9f581bc6c990c32, type: 3}
   fallbackColor: {r: 0.8980392, g: 0.89411765, b: 0.80784315, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 37d8134813df9c43d6ca4f65c11d8cbe, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0

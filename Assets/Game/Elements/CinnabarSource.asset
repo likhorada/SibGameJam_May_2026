@@ -16,6 +16,6 @@ MonoBehaviour:
   displayName: Cinnabar
   icon: {fileID: 21300000, guid: 7ccbf7dec2744ad6ba923381c95f8c3a, type: 3}
   fallbackColor: {r: 0.75686276, g: 0.06666667, b: 0.043137256, a: 1}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 100000, guid: 1c932c3af2e7e33e6537f5ef220ee13d, type: 3}
   worldScale: {x: 1, y: 1, z: 1}
   discardOnTableClose: 0
