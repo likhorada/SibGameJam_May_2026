@@ -32,6 +32,10 @@ dotnet-install.ps1
 *.unitypackage
 *.app
 
+# Local Unity AI package settings
+[Pp]roject[Ss]ettings/[Pp]ackages/com.unity.ai.assistant/
+[Pp]roject[Ss]ettings/[Pp]ackages/com.unity.ai.inference/
+
 # OS
 .DS_Store
 Thumbs.db
