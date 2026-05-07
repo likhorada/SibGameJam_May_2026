@@ -18,7 +18,7 @@
 |---|---|
 | WASD / стрелки | Движение относительно камеры |
 | E | Взаимодействие: raycast 2.4 м, затем fallback-сфера 1.8 м |
-| Escape | Закрыть панель крафта |
+| Escape | Сначала закрыть панель крафта, иначе открыть/закрыть меню паузы |
 
 ## Игрок и инвентарь
 
@@ -83,7 +83,7 @@
 
 ## 3D-визуалы элементов
 
-`ElementDefinition.worldPrefab` задает модель, которую столы подношений показывают в мире. Базовые runtime-модели лежат в `Assets/Game/Prefabs/ElementWorldModels/`. Импортированные wrapper-prefab'ы лежат в `Assets/Game/Art/Models/` и могут показывать выбранный дочерний mesh из FBX уровня.
+`ElementDefinition.worldPrefab` задает модель, которую столы подношений показывают в мире. Базовые runtime-модели лежат в `Assets/Game/Prefabs/ElementWorldModels/`. Импортированные wrapper-prefab'ы лежат в `Assets/Game/Art/ElementModels/` и могут показывать выбранный дочерний mesh из FBX уровня.
 
 ## Таблица рецептов
 
@@ -167,9 +167,12 @@
 - `CraftingPanelUI` строит overlay стола крафта.
 - `TableDropArea` принимает перетаскиваемые элементы.
 - `TableItemUI` отвечает за предметы на столе и крафт пары.
+- `PauseMenuController` строит Esc-меню паузы runtime-кодом, если в сцене не назначен готовый объект/префаб.
 - `InteractionHintWindow` показывает временные текстовые подсказки.
 
 `InventoryUI` и `CraftingPanelUI` имеют поля Inspector для будущей настройки визуала: спрайты панелей, цвета, размеры слотов, размеры иконок и размеры текста. `ElementDefinition` также может задавать личный UI-фон элемента, который будет виден в инвентаре, на столе крафта и в drag-preview. Если личный фон не настроен, элементы на столе используют fallback панели через `Table Item Background Mode`.
+
+В меню паузы есть `Resume`, `Restart`, `Quit` и отдельные ползунки `Music` / `SFX`. `Music` управляет эмбиентом комнат через `AmbientMusicSwitcher`, а `SFX` управляет интерфейсными и игровыми звуками через `GameAudio`.
 
 ## Аудио
 
@@ -181,6 +184,7 @@
 ## Архитектура
 
 - `SceneInstaller` связывает ссылки сцены на `Start()`.
+- `SceneInstaller.pauseMenuController` можно оставить пустым: на старте `SceneInstaller` найдет или создаст `PauseMenuController` под root Canvas.
 - Статическое singleton-состояние используется в `Inventory`, `CraftingSystem`, `GameOverController` и `GameAudio`.
 - Данные лежат в ScriptableObject: `ElementDefinition`, `CraftRecipeDatabase`, `GameAudioProfile`.
 - Автоматических gameplay-тестов нет. Проверка проводится в Unity Editor Play Mode.

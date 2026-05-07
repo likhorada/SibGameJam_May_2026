@@ -14,6 +14,7 @@ Unity 6000.4.5f1, URP. 3D golem-crafting game. No build/test/lint pipeline is co
 | CraftingSystem | `Assets/Scripts/Craft/CraftingSystem.cs` | Dictionary lookup by `CraftKey` using `roomId` plus 2 element ids. Input order is normalized. |
 | GameAudio | `Assets/Scripts/Music/GameAudio.cs` | Plays generated fallback sounds unless a `GameAudioProfile` provides custom clips. |
 | GameOverController | `Assets/Scripts/Scene/GameOverController.cs` | Static `IsGameOver` pauses movement/interaction checks. |
+| PauseMenuController | `Assets/Scripts/UI/PauseMenuController.cs` | Runtime Esc menu. `SceneInstaller` may auto-create it on the root Canvas if the Inspector field is empty. |
 | Interaction hints | `Assets/Scripts/Interaction/InteractionHintOnInteract.cs` | Optional component for temporary text popups after interaction, including conditional rules for objects with hint state. |
 
 ## Data
@@ -21,7 +22,7 @@ Unity 6000.4.5f1, URP. 3D golem-crafting game. No build/test/lint pipeline is co
 - `CraftRecipeDatabase`: `Create > Golem Craft/Craft Recipe Database` (`roomId` + 2 inputs -> 1 result)
 - `GameAudioProfile`: `Create > Golem Craft/Audio/Game Audio Profile` (custom clips per `GameSoundId`)
 - Element world models: `Assets/Game/Prefabs/ElementWorldModels/`
-- Imported element wrappers: `Assets/Game/Art/Models/`
+- Imported element wrappers: `Assets/Game/Art/ElementModels/`
 - Default audio profile: `Assets/Game/Audio/DefaultGameAudioProfile.asset`
 
 ## Interaction Flow
@@ -44,14 +45,16 @@ Unity 6000.4.5f1, URP. 3D golem-crafting game. No build/test/lint pipeline is co
 | 5 | `room_05` | Magic chamber finale | Offering Tables x4 | none | no |
 
 ## UI And Visuals
-- UI is generated at runtime by `InventoryUI`, `CraftingPanelUI`, `TableItemUI`, and `UIFactory`.
+- UI is generated at runtime by `InventoryUI`, `CraftingPanelUI`, `TableItemUI`, `PauseMenuController`, and `UIFactory`.
 - `InventoryUI` and `CraftingPanelUI` expose Inspector fields for panel style, sprites, colors, slot sizes, icon sizes, and text sizes.
+- Pause menu is currently runtime-built: empty `SceneInstaller.pauseMenuController` is valid because `SceneInstaller` finds or creates `PauseMenuController` under `rootCanvas` during `Start()`.
 - `ElementDefinition.Ui Background Mode` has priority over panel-level item backgrounds and follows the element in inventory, craft table UI, and drag previews.
 - Future finished panel art should be assigned as sprites in these Inspector fields. Use sliced sprites when panel borders need to scale cleanly.
 
 ## Audio
 - Existing code calls `GameAudio.Play(GameSoundId.X)`.
 - If no custom clip is configured, generated fallback sounds play.
+- Pause menu has separate sliders: `SFX` controls `GameAudio.SetMasterVolume`, `Music` controls room ambience through `AmbientMusicSwitcher.SetMusicVolume`.
 - To override sounds, add entries to `Assets/Game/Audio/DefaultGameAudioProfile.asset` or another `GameAudioProfile`, then assign that profile through `SceneInstaller` or `PF_GameAudioController`.
 
 ## Key Progression
@@ -66,6 +69,7 @@ Unity 6000.4.5f1, URP. 3D golem-crafting game. No build/test/lint pipeline is co
 ## Key Quirks
 - Unity Input System package is installed, but gameplay uses legacy `Input` API.
 - `RoomTransitionTrigger` uses `#if UNITY_6000_0_OR_NEWER` for `linearVelocity`.
+- `Esc` closes an open craft panel first. `CraftingPanelUI.LastEscapeCloseFrame` prevents the same key press from also opening pause.
 - Craft table item backgrounds default to transparent; use `ElementDefinition.Ui Background Mode` for per-element backgrounds or `CraftingPanelUI.Table Item Background Mode` for panel fallback.
 - `.csproj`, `.sln`, `Library/`, `Logs/`, `Temp/`, `UserSettings/`, `.dotnet/`, and generated local build folders should not be treated as hand-authored gameplay assets.
 - Some systems use static singleton state (`Inventory.Instance`, `CraftingSystem.Instance`, `GameOverController.IsGameOver`, `GameAudio`). Reset/scene reload behavior should be checked in Play Mode.

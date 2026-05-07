@@ -18,7 +18,7 @@
 |---|---|
 | WASD / Arrows | Move, camera-relative |
 | E | Interact by raycast 2.4m, then overlap fallback 1.8m |
-| Escape | Close crafting panel |
+| Escape | Close crafting panel first; otherwise open/close pause menu |
 
 ## Player And Inventory
 
@@ -85,7 +85,7 @@ Rooms are placed in one scene, `Assets/Scenes/Room_v3.unity`, and connected by `
 
 ### World Visuals
 
-`ElementDefinition.worldPrefab` controls the 3D model used by offering tables. Default generated models live in `Assets/Game/Prefabs/ElementWorldModels/`. Imported wrapper prefabs live in `Assets/Game/Art/Models/` and can show a named child mesh from a level FBX.
+`ElementDefinition.worldPrefab` controls the 3D model used by offering tables. Default generated models live in `Assets/Game/Prefabs/ElementWorldModels/`. Imported wrapper prefabs live in `Assets/Game/Art/ElementModels/` and can show a named child mesh from a level FBX.
 
 ## Recipe Table
 
@@ -169,9 +169,12 @@ The main UI is generated at runtime:
 - `CraftingPanelUI` creates the craft table overlay.
 - `TableDropArea` accepts dragged elements.
 - `TableItemUI` handles table items and pair crafting.
+- `PauseMenuController` creates the Esc pause overlay at runtime if no scene/prefab instance is assigned.
 - `InteractionHintWindow` shows temporary hint popups.
 
 `InventoryUI` and `CraftingPanelUI` expose Inspector fields for future visual polish: panel sprites, colors, slot sizes, icon sizes, and text sizes. `ElementDefinition` can also define a personal UI background that follows that element in inventory, craft table UI, and drag previews. If no personal background is configured, craft table items use the panel-level `Table Item Background Mode` fallback.
+
+Pause menu has `Resume`, `Restart`, `Quit`, and separate `Music` / `SFX` sliders. The `Music` slider controls room ambience through `AmbientMusicSwitcher`; the `SFX` slider controls UI and gameplay sounds through `GameAudio`.
 
 ## Audio
 
@@ -183,6 +186,7 @@ The main UI is generated at runtime:
 ## Architecture Notes
 
 - `SceneInstaller` wires scene references on `Start()`.
+- `SceneInstaller.pauseMenuController` is optional: if it is empty, `SceneInstaller` finds or creates `PauseMenuController` under the root Canvas.
 - Static singleton-style access is used by `Inventory`, `CraftingSystem`, `GameOverController`, and `GameAudio`.
 - ScriptableObjects hold data: `ElementDefinition`, `CraftRecipeDatabase`, `GameAudioProfile`.
 - There are no automated gameplay tests. Verify in Unity Editor Play Mode.

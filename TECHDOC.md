@@ -41,7 +41,7 @@ $env:DOTNET_NOLOGO = '1'
 | `Assets/Game/Audio` | Профили звуков |
 | `Assets/Game/Art/ElementSprites` | UI-иконки элементов |
 | `Assets/Game/Prefabs/ElementWorldModels` | Простые runtime-модели элементов |
-| `Assets/Game/Art/Models` | Wrapper-prefab'ы для частей FBX |
+| `Assets/Game/Art/ElementModels` | Wrapper-prefab'ы для частей FBX |
 | `Assets/Game/Prefabs` | Основные prefab'ы интерактивных объектов и UI |
 | `Assets/Models/v3` | FBX уровней, материалы и текстуры |
 
@@ -55,9 +55,47 @@ $env:DOTNET_NOLOGO = '1'
 2. Передает базу рецептов в `CraftingSystem`.
 3. Настраивает `GameAudio`, если назначены `GameAudioProfile` или `AudioSource`.
 4. Настраивает `InventoryUI`.
-5. Проходит по массиву `craftTables` и связывает физические столы с их `CraftingPanelUI`.
+5. Настраивает меню паузы через `PauseMenuController`: использует назначенную ссылку, находит существующий объект под Canvas или создает runtime-объект автоматически.
+6. Проходит по массиву `craftTables` и связывает физические столы с их `CraftingPanelUI`.
 
 Если что-то не работает на старте, первым делом проверять ссылки в `SceneInstaller`.
+
+### PauseMenuController
+
+`PauseMenuController` отвечает за Esc-меню паузы. Сейчас это runtime UI: меню строится кодом через текущий `rootCanvas`, `UIFactory`, `Button`, `Slider`, `Image` и `Text`.
+
+Почему в Inspector у `SceneInstaller` может быть пустое поле `Pause Menu Controller`, но меню все равно работает:
+
+1. На `Start()` `SceneInstaller.InstallPauseMenu()` проверяет serialized поле `pauseMenuController`.
+2. Если поле пустое, он ищет `PauseMenuController` среди дочерних объектов `rootCanvas` через `GetComponentInChildren<PauseMenuController>(true)`.
+3. Если такого объекта нет, он создает новый `GameObject("PauseMenuController")` под `rootCanvas` и добавляет компонент `PauseMenuController`.
+4. Затем вызывает `pauseMenuController.Configure(rootCanvas)`.
+5. `Configure` строит overlay `PauseMenuOverlay`, сразу скрывает его и применяет стартовые значения громкости.
+
+Поэтому пустая ссылка в `SceneInstaller` сейчас не ошибка. Это сделано как быстрый game-jam fallback, чтобы меню паузы появлялось даже без ручной настройки сцены.
+
+Текущее поведение:
+
+- `Esc` открывает меню паузы, если не открыт craft panel.
+- Если открыт `CraftingPanelUI`, `Esc` сначала закрывает craft panel. `CraftingPanelUI.LastEscapeCloseFrame` не дает тем же нажатием открыть меню паузы в этот же кадр.
+- При паузе `PauseMenuController.IsPaused = true`, `Time.timeScale = 0`.
+- `PlayerMovement` и `PlayerInteractor` проверяют `PauseMenuController.IsPaused` и перестают читать движение/взаимодействие.
+- `Resume` снимает паузу и возвращает `Time.timeScale = 1`.
+- `Restart` снимает паузу и перезагружает активную сцену по `buildIndex`, а если его нет - по имени сцены.
+- `Quit` в билде вызывает `Application.Quit()`, а в Unity Editor останавливает Play Mode.
+- Ползунок `Music` вызывает `AmbientMusicSwitcher.SetMusicVolume` и меняет только эмбиент комнат.
+- Ползунок `SFX` вызывает `GameAudio.SetMasterVolume` и меняет только UI/gameplay SFX.
+
+Как позже настроить меню паузы нормально:
+
+1. Создать prefab или scene object под главным `Canvas`, например `PF_PauseMenu`.
+2. Повесить на него `PauseMenuController`.
+3. Назначить этот объект в `SceneInstaller.pauseMenuController`. Тогда `SceneInstaller` будет использовать его, а не создавать fallback-объект.
+4. Для полноценного арт/UI-прохода лучше вынести визуал из кода в prefab: backdrop, panel, кнопки, тексты и sliders должны быть обычными UI-объектами в Canvas.
+5. После этого можно расширить `PauseMenuController`: добавить serialized ссылки на готовые `Button`, `Slider`, `GameObject overlay`, стили/спрайты, и оставить runtime-сборку только как fallback.
+6. Если появится main menu/settings, перенести общие настройки громкости в отдельный сервис или ScriptableObject/PlayerPrefs, чтобы `Music` и `SFX` сохранялись между запусками.
+7. Проверить порядок canvas/sorting: pause overlay должен быть выше inventory, craft panel и hint windows.
+8. Обязательно проверить Play Mode: `Esc`, craft panel conflict, restart, quit в Editor, оба slider'а, движение и `E` во время паузы.
 
 ### Static singleton-состояние
 
@@ -172,7 +210,7 @@ Prefab из `Assets/Game/Prefabs/ElementWorldModels/` использует `Elem
 
 ### FBX-wrapper
 
-Prefab из `Assets/Game/Art/Models/` берет level FBX, ищет дочерний объект по `sourceChildName`, скрывает лишние renderer'ы и показывает только нужную модель.
+Prefab из `Assets/Game/Art/ElementModels/` берет level FBX, ищет дочерний объект по `sourceChildName`, скрывает лишние renderer'ы и показывает только нужную модель.
 
 Важные поля:
 
