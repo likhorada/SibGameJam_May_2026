@@ -25,6 +25,8 @@ public sealed class CraftingPanelUI : MonoBehaviour
         get { return openPanelCount > 0; }
     }
 
+    public static int LastEscapeCloseFrame { get; private set; } = -1;
+
     public static event Action<string, string, ElementDefinition> ElementCrafted;
 
     [Header("Panel Layout")]
@@ -80,6 +82,14 @@ public sealed class CraftingPanelUI : MonoBehaviour
 
     private readonly List<TableItemUI> tableItems = new List<TableItemUI>();
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        openPanelCount = 0;
+        LastEscapeCloseFrame = -1;
+        ElementCrafted = null;
+    }
+
     public void Configure(Canvas canvas)
     {
         rootCanvas = canvas;
@@ -93,7 +103,10 @@ public sealed class CraftingPanelUI : MonoBehaviour
     private void Update()
     {
         if (gameObject.activeSelf && Input.GetKeyDown(KeyCode.Escape))
+        {
+            LastEscapeCloseFrame = Time.frameCount;
             Close();
+        }
     }
 
     private void OnDisable()

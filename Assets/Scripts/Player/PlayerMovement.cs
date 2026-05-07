@@ -20,7 +20,7 @@ public sealed class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        if (GameOverController.IsGameOver)
+        if (GameOverController.IsGameOver || PauseMenuController.IsPaused)
         {
             inputDirection = Vector3.zero;
             return;

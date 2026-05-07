@@ -40,6 +40,11 @@ dotnet-install.ps1
 .DS_Store
 Thumbs.db
 
+# Local editor / art backups
+.vsconfig
+*.blend1
+*~
+
 # Crash reports
 sysinfo.txt
 crashlytics-build.properties

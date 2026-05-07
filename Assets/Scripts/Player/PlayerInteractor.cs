@@ -12,7 +12,7 @@ public sealed class PlayerInteractor : MonoBehaviour
 
     private void Update()
     {
-        if (GameOverController.IsGameOver)
+        if (GameOverController.IsGameOver || PauseMenuController.IsPaused)
             return;
 
         if (CraftingPanelUI.HasOpenPanel)

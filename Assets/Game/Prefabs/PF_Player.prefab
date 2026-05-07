@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 4102048448253325516}
   - component: {fileID: 989909264856261783}
   - component: {fileID: 1775611707533601848}
+  - component: {fileID: 7354452083091846242}
   m_Layer: 0
   m_Name: PF_Player
   m_TagString: Player
@@ -170,3 +171,20 @@ MonoBehaviour:
   interactDistance: 2.4
   fallbackRadius: 1.6
   rayOffset: {x: 0, y: 0.45, z: 0}
+--- !u!114 &7354452083091846242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2069829488641372508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55d80a4ebf5c431788dd5f9336620860, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerVisualAutoLoader
+  resourcePath: Characters/Golem/GolemVisual
+  localPosition: {x: 0, y: 0, z: 0}
+  localEulerAngles: {x: 0, y: 0, z: 0}
+  localScale: {x: 1, y: 1, z: 1}
+  hideBuiltInRenderer: 1

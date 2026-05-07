@@ -23,6 +23,7 @@ public sealed class SceneInstaller : MonoBehaviour
     [Header("UI")]
     [SerializeField] private Canvas rootCanvas;
     [SerializeField] private InventoryUI inventoryUI;
+    [SerializeField] private PauseMenuController pauseMenuController;
 
     [Header("Craft Tables")]
     [SerializeField] private CraftTableBinding[] craftTables;
@@ -80,6 +81,7 @@ public sealed class SceneInstaller : MonoBehaviour
         craftingSystem.Configure(recipeDatabase);
         InstallAudio();
         inventoryUI.Configure(rootCanvas, clayElement);
+        InstallPauseMenu();
 
         InstallCraftTables();
 
@@ -92,6 +94,21 @@ public sealed class SceneInstaller : MonoBehaviour
             return;
 
         GameAudio.Configure(gameAudioSource, gameAudioProfile, gameAudioVolume);
+    }
+
+    private void InstallPauseMenu()
+    {
+        if (pauseMenuController == null)
+            pauseMenuController = rootCanvas.GetComponentInChildren<PauseMenuController>(true);
+
+        if (pauseMenuController == null)
+        {
+            GameObject pauseMenuObject = new GameObject("PauseMenuController");
+            pauseMenuObject.transform.SetParent(rootCanvas.transform, false);
+            pauseMenuController = pauseMenuObject.AddComponent<PauseMenuController>();
+        }
+
+        pauseMenuController.Configure(rootCanvas);
     }
 
     private void InstallCraftTables()
