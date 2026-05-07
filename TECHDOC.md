@@ -2,20 +2,20 @@
 
 Проект: Unity 6000.4.5f1, URP, 3D-игра про крафт голема. Основная сцена: `Assets/Scenes/Room_v3.unity`.
 
+Документ отвечает на практические вопросы: где что лежит, как добавить контент, как настраивать звуки, UI, подсказки, модели и как проверять изменения.
+
 ## Быстрый старт
 
 1. Открыть проект через Unity Hub.
 2. Открыть сцену `Assets/Scenes/Room_v3.unity`.
 3. Запустить Play Mode.
-4. Проверить Console: `SceneInstaller: scene installed successfully` и `CraftingSystem: recipes loaded = ...`.
+4. Проверить Console: должны появиться сообщения вроде `SceneInstaller: scene installed successfully` и `CraftingSystem: recipes loaded = ...`.
 
-Главная точка связывания сцены: `Assets/Scripts/Scene/SceneInstaller.cs`. Он ничего не создает с нуля, а связывает уже расставленные ссылки: `Inventory`, `CraftingSystem`, `CraftRecipeDatabase`, UI и столы крафта.
+Главная точка связывания сцены - `Assets/Scripts/Scene/SceneInstaller.cs`. Он не создает игру с нуля, а связывает уже расставленные ссылки: `Inventory`, `CraftingSystem`, `CraftRecipeDatabase`, Canvas, UI и столы крафта.
 
-## Локальная проверка кода
+## Локальная проверка C#
 
-В проект локально установлен .NET SDK 8.0 через `.dotnet/`. Он не требует системной установки и игнорируется git.
-
-Команда проверки компиляции:
+В проекте есть локальный .NET SDK в `.dotnet/`. Для проверки компиляции:
 
 ```powershell
 $env:DOTNET_CLI_HOME = Join-Path (Get-Location) '.dotnet_home'
@@ -24,444 +24,443 @@ $env:DOTNET_NOLOGO = '1'
 .\.dotnet\dotnet.exe build Assembly-CSharp.csproj
 ```
 
-Для `Assembly-CSharp.csproj` нужны reference assemblies `.NETFramework v4.7.1`. Они лежат локально в `.netfx-reference-assemblies/`, а путь к ним задает `Directory.Build.props`.
+Ожидаемые предупреждения:
 
-Ожидаемые предупреждения: `CS0649` про serialized поля. Это нормально для Unity, потому что поля заполняются через Inspector.
+- `CS0649` про serialized поля - нормально для Unity, потому что значения задаются через Inspector.
+- Предупреждения MSBuild о версиях Unity assemblies - обычно не относятся к gameplay-коду.
+
+Важно: `.csproj` генерируется Unity. Если добавлены новые `.cs` файлы, Unity может обновить проектные файлы только после открытия/перегенерации проекта.
 
 ## Основные папки
 
 | Путь | Назначение |
 |---|---|
 | `Assets/Scripts` | Игровой C# код |
-| `Assets/Game/Elements` | `ElementDefinition` ScriptableObject для каждого элемента |
+| `Assets/Game/Elements` | `ElementDefinition` для всех элементов |
 | `Assets/Game/Crafting/MainCraftRecipeDatabase.asset` | База рецептов |
-| `Assets/Game/Prefabs/ElementWorldModels` | Простые runtime-модели элементов из primitives |
-| `Assets/Game/Art/Models` | Wrapper-prefab'ы, которые показывают выбранные части level FBX |
+| `Assets/Game/Audio` | Профили звуков |
 | `Assets/Game/Art/ElementSprites` | UI-иконки элементов |
-| `Assets/Models/v3` | Level FBX, материалы и текстуры художников |
+| `Assets/Game/Prefabs/ElementWorldModels` | Простые runtime-модели элементов |
+| `Assets/Game/Art/Models` | Wrapper-prefab'ы для частей FBX |
+| `Assets/Game/Prefabs` | Основные prefab'ы интерактивных объектов и UI |
+| `Assets/Models/v3` | FBX уровней, материалы и текстуры |
 
-## Элементы
+## Архитектура
 
-Элемент описывается `ElementDefinition`:
+### SceneInstaller
 
-- `id` — стабильный id, используется в рецептах. Пример: `iron`, `ancient_scroll`.
-- `displayName` — имя для UI и логов.
-- `icon` — UI-спрайт.
-- `fallbackColor` — цвет для UI/заглушек.
-- `worldPrefab` — 3D-модель, которую offering table показывает в мире.
-- `worldScale` — дополнительный scale при спавне.
-- `discardOnTableClose` — если true, предмет исчезает при закрытии craft table и не возвращается в инвентарь.
+`SceneInstaller` на `Start()`:
 
-Чтобы добавить новый элемент:
+1. Находит или использует назначенные ссылки на `Inventory` и `CraftingSystem`.
+2. Передает базу рецептов в `CraftingSystem`.
+3. Настраивает `GameAudio`, если назначены `GameAudioProfile` или `AudioSource`.
+4. Настраивает `InventoryUI`.
+5. Проходит по массиву `craftTables` и связывает физические столы с их `CraftingPanelUI`.
 
-1. Создать `ElementDefinition` через `Create > Golem Craft > Element Definition`.
-2. Задать уникальный `id` в нижнем регистре.
-3. Назначить `icon`.
-4. Назначить `worldPrefab`.
-5. Если элемент можно подобрать в комнате, создать объект с `ElementSourceInteractable` и указать этот `ElementDefinition`.
+Если что-то не работает на старте, первым делом проверять ссылки в `SceneInstaller`.
 
-## 3D-модели элементов
+### Static singleton-состояние
 
-Модель элемента назначается в `ElementDefinition.worldPrefab`. Сейчас есть два режима: простая generated primitive-модель и FBX-wrapper. Для обычной настройки размера чаще всего не нужно менять код.
+В проекте несколько систем доступны через статические поля:
 
-### Primitive-модель
+- `Inventory.Instance`
+- `CraftingSystem.Instance`
+- `GameOverController.Instance`
+- `GameOverController.IsGameOver`
+- `GameAudio` как статический сервис
 
-Prefab из `Assets/Game/Prefabs/ElementWorldModels/` содержит `ElementWorldModel` и `elementId`. На runtime скрипт строит форму из Unity primitives. Это надежный fallback: модель не зависит от импортированных FBX.
-
-В primitive-prefab'е важны:
-
-- `elementId` — какую форму строить.
-- `modelScale` — базовый размер всей generated-модели.
-
-### FBX-wrapper
-
-Prefab из `Assets/Game/Art/Models/` тоже содержит `ElementWorldModel`, но дополнительно использует:
-
-- `sourceModel` — level FBX prefab.
-- `sourceChildName` — имя дочернего объекта внутри FBX.
-- `sourceModelFitSize` — целевой размер модели.
-- `includeSourceNameVariants` — включает варианты вроде `Wood.001`, `Chest.002`, `IngotCinnabar.010`.
-
-Wrapper не копирует весь уровень в сцену визуально. Он инстанцирует FBX, оставляет включенными только renderers нужного дочернего объекта, центрирует и масштабирует их.
-
-Важно: если wrapper-prefab правится вручную в YAML, `sourceModel` должен ссылаться на root `GameObject` импортированного FBX. Для текущих `Level-*-v3.fbx` это `fileID: 919132149155446097`. `fileID: 100100000` подходит для `m_SourcePrefab` в сцене, но не подходит для serialized `GameObject` поля компонента и приведет к невидимой модели.
-
-### Как менять размер модели
-
-Самый удобный и безопасный способ — менять `worldScale` в `ElementDefinition` конкретного элемента. Это финальный множитель, который применяется при спавне модели на offering table. Он подходит, когда модель в целом хорошая, но на столе выглядит слишком большой или слишком маленькой.
-
-Примеры:
-
-- модель в 2 раза больше: `worldScale = (2, 2, 2)`;
-- модель в 2 раза меньше: `worldScale = (0.5, 0.5, 0.5)`;
-- лучше почти всегда использовать равномерный scale, где `x = y = z`.
-
-Когда использовать другие поля:
-
-| Поле | Где находится | Когда менять |
-|---|---|---|
-| `ElementDefinition.worldScale` | `Assets/Game/Elements/<Element>.asset` | Быстрая настройка размера конкретного элемента в игре |
-| `ElementWorldModel.modelScale` | prefab модели | Базовый размер всего prefab'а, если он слишком крупный/мелкий везде |
-| `ElementWorldModel.sourceModelFitSize` | FBX-wrapper prefab | Размер выбранного FBX-child до финального `worldScale` |
-| `ElementWorldModel.sourceModelOffset` | FBX-wrapper prefab | Сместить модель относительно anchor, если она висит не по центру |
-| `ElementWorldModel.sourceModelEulerAngles` | FBX-wrapper prefab | Развернуть импортированную модель |
-| `ElementWorldModel.sourceModelScale` | FBX-wrapper prefab | Тонкая настройка исходного FBX до auto-fit; обычно не нужна |
-
-Практическое правило:
-
-1. Сначала крутить `ElementDefinition.worldScale`.
-2. Если все экземпляры этого prefab'а изначально неадекватного размера, крутить `modelScale`.
-3. Для FBX-wrapper'ов, если auto-fit сделал объект неправильного размера еще до `worldScale`, крутить `sourceModelFitSize`.
-4. Не менять scale у `PF_OfferingTable` или `itemAnchors` ради размера предметов. Это может снова привести к растяжению/смещению.
-
-### Как менять положение и поворот модели
-
-Если модель видна, но лежит неудобно:
-
-- `sourceModelOffset` — подвинуть импортированную модель внутри wrapper'а.
-- `sourceModelEulerAngles` — развернуть модель, например положить факел или повернуть сундук лицом к камере.
-- `itemAnchors` на offering table — менять место размещения конкретного слота на столе.
-
-Разница важная: `sourceModelOffset` исправляет сам prefab элемента, а `itemAnchors` исправляют композицию на конкретном столе.
-
-Текущие FBX-wrapper'ы:
-
-| Элемент | FBX child |
-|---|---|
-| `iron` | `IngotIron` |
-| `coal` | `Coal` |
-| `wood` | `Wood` |
-| `torch` | `WallTorch` |
-| `berries` | `Berry` |
-| `herbs` | `Grass` |
-| `paper` | `Paper_Pile1` |
-| `chest` | `Chest` |
-| `cinnabar` | `IngotCinnabar` |
-
-Если wrapper-модель не видна:
-
-1. Проверить, что `sourceModel` не `None`.
-2. Проверить имя `sourceChildName` по FBX hierarchy.
-3. Включить `includeSourceNameVariants`, если модель разбита на части с суффиксами.
-4. Проверить, что `sourceModel.fileID` ссылается на root `GameObject` FBX, а не на `100100000`.
-5. Уменьшить или увеличить `sourceModelFitSize`.
-6. Если нужно быстро вернуть видимость, переключить `worldPrefab` элемента на primitive-prefab из `Assets/Game/Prefabs/ElementWorldModels`.
-
-### Частые вопросы по моделям
-
-| Вопрос | Что делать |
-|---|---|
-| Модель слишком маленькая на offering table | Увеличить `worldScale` у элемента |
-| Модель слишком большая | Уменьшить `worldScale` у элемента |
-| Только FBX-wrapper неправильного размера | Настроить `sourceModelFitSize` в `Assets/Game/Art/Models/PF_ImportedElement_*` |
-| Модель стоит не в центре anchor | Настроить `sourceModelOffset` |
-| Модель повернута боком/вверх ногами | Настроить `sourceModelEulerAngles` |
-| Модель растянулась | Проверить, что предмет не parent'ится под объект с неравномерным scale; для offering table включить `spawnedVisualsFollowAnchors` |
-| Нужна другая часть FBX | Изменить `sourceChildName`; если частей несколько с суффиксами, включить `includeSourceNameVariants` |
-| Нужно быстро откатить проблемный импорт | В `ElementDefinition.worldPrefab` вернуть prefab из `Assets/Game/Prefabs/ElementWorldModels` |
+Это удобно для game jam: любому скрипту легко обратиться к инвентарю или аудио. Риск в том, что такое состояние живет глобально, не передается явно через ссылки и может неожиданно сохраняться между перезапусками Play Mode, если включены нестандартные настройки domain reload. Поэтому после изменений в этих системах обязательно проверять restart, reload scene и повторный запуск Play Mode.
 
 ## Инвентарь
 
-`Inventory` хранит 4 обычных слота. Глина отображается в UI как постоянный слот и не занимает обычный слот.
+`Inventory` хранит только 4 обычных слота. Глина - постоянный UI-слот и не входит в массив слотов.
 
-Основные методы:
+Ключевые методы:
 
-- `AddElement(element)` — добавить элемент в первый свободный слот.
-- `HasElement(element)` — проверить наличие.
-- `TryConsumeElement(element)` — удалить один элемент из инвентаря.
-- `ClearAllNormalSlots()` — очистить 4 обычных слота.
+- `AddElement(element)` - добавить элемент в первый свободный слот.
+- `TrySetSlot(index, element)` - положить элемент в конкретный пустой слот.
+- `TryClearSlot(index)` - очистить конкретный слот.
+- `HasElement(element)` - проверить наличие.
+- `TryConsumeElement(element)` - удалить один такой элемент.
+- `ClearAllNormalSlots()` - очистить 4 обычных слота.
 
-UI инвентаря работает через `InventoryUI` и `InventorySlotUI`.
+UI инвентаря:
+
+- `InventoryUI` строит панель и слоты.
+- `InventorySlotUI` отвечает за drag/drop.
+- Постоянный слот глины использует `DragContext.BeginFromPermanentElement`.
+
+Если инвентарь "ломается", проверить:
+
+1. `Inventory.Instance` существует.
+2. В сцене есть `EventSystem`.
+3. `SceneInstaller.inventoryUI` и `SceneInstaller.rootCanvas` назначены.
+4. Предметы со стола не занимают место в инвентаре, пока панель крафта открыта.
+5. При закрытии стола есть свободные слоты для возврата предметов.
 
 ## Крафт
 
-Все рецепты парные: 2 входа дают 1 результат. Порядок входов не важен.
+Все рецепты парные: 2 входа дают 1 результат. Рецепт определяется по:
 
-Рецепт описывается в `CraftRecipeDatabase`:
+- `roomId`;
+- id первого элемента;
+- id второго элемента.
 
-- `roomId` — комната, где работает рецепт. Пример: `room_01`.
-- `inputA`, `inputB` — два элемента.
-- `result` — результат.
+Порядок входов не важен: `CraftKey` сортирует id элементов. `iron + wood` и `wood + iron` считаются одной парой.
 
-Ключ рецепта: `roomId + sorted(inputA.id, inputB.id)`.
+Основные классы:
 
-Чтобы добавить рецепт:
+- `CraftRecipeDatabase` - список рецептов.
+- `CraftRecipe` - одна запись рецепта.
+- `CraftingSystem` - lookup по `CraftKey`.
+- `CraftingPanelUI` - UI стола крафта.
+- `TableDropArea` - область, куда бросают элементы.
+- `TableItemUI` - элемент, лежащий на столе.
 
-1. Открыть `Assets/Game/Crafting/MainCraftRecipeDatabase.asset`.
-2. Добавить элемент в список `recipes`.
-3. Указать `roomId`, `inputA`, `inputB`, `result`.
-4. Проверить в Play Mode через соответствующий craft table.
+Если рецепт не работает:
 
-Если один и тот же набор элементов должен давать разные результаты в разных комнатах, добавить отдельные записи с разными `roomId`.
+1. Проверить `roomId` у `CraftTableInteractable`.
+2. Проверить такой же `roomId` в `MainCraftRecipeDatabase`.
+3. Проверить, что input A/input B/result назначены именно нужными `ElementDefinition`.
+4. Проверить, нет ли дубликата с той же комнатой и той же парой.
+5. Проверить Console на `No recipe`.
 
-## Craft Table
+## Элементы
 
-`CraftTableInteractable` открывает UI крафта.
+Элемент описывается `ElementDefinition`.
+
+Поля:
+
+- `id` - стабильный id для рецептов, например `iron`.
+- `displayName` - имя в UI.
+- `icon` - спрайт для UI.
+- `fallbackColor` - цвет для заглушек.
+- `uiBackgroundMode` - личный фон элемента в UI.
+- `uiBackgroundStyle` - цвет/sprite личного UI-фона, если выбран `CustomStyle`.
+- `worldPrefab` - 3D-модель для подношений.
+- `worldScale` - финальный множитель размера в мире.
+- `discardOnTableClose` - если true, элемент исчезает при закрытии craft table.
+
+Как добавить элемент:
+
+1. Создать `ElementDefinition`: `Create > Golem Craft/Element Definition`.
+2. Заполнить `id`, `displayName`, `icon`.
+3. Если элементу нужен личный UI-фон, настроить `UI Background`.
+4. Назначить `worldPrefab`, если нужен 3D-визуал на offering table.
+5. Если элемент должен исчезать при закрытии стола, включить `discardOnTableClose`.
+6. Если элемент можно подбирать в комнате, создать объект с `ElementSourceInteractable` и collider.
+
+### Личный UI-фон элемента
+
+`ElementDefinition` может хранить фон, который будет появляться вместе с этим элементом в инвентаре, на craft table и в drag-preview.
+
+`Ui Background Mode`:
+
+- `None` - личного фона нет. Это default для всех существующих элементов.
+- `FallbackColor` - фон берется из `fallbackColor` элемента.
+- `CustomStyle` - фон берется из `Ui Background Style`: можно назначить sprite, цвет и тип `Image`.
+
+Приоритет такой: сначала личный фон элемента, потом fallback конкретной панели. Поэтому если у элемента включен `Ui Background Mode`, он будет выглядеть одинаково на разных UI-панелях.
+
+## 3D-модели элементов
+
+Есть два типа моделей.
+
+### Primitive prefab
+
+Prefab из `Assets/Game/Prefabs/ElementWorldModels/` использует `ElementWorldModel` и строит простую форму из Unity primitives во время игры. Это надежный fallback, если импортированная модель сломалась.
+
+### FBX-wrapper
+
+Prefab из `Assets/Game/Art/Models/` берет level FBX, ищет дочерний объект по `sourceChildName`, скрывает лишние renderer'ы и показывает только нужную модель.
 
 Важные поля:
 
-- `tableId` — id стола.
-- `roomId` — id комнаты для поиска рецептов.
-- `craftingPanel` — UI-панель стола.
-- `startsActive` — активен ли стол сразу.
-- `requiredActivationElement` — элемент для активации.
-- `consumeActivationElement` — расходовать ли элемент активации.
+| Поле | Где | Когда менять |
+|---|---|---|
+| `ElementDefinition.worldScale` | `Assets/Game/Elements/<Element>.asset` | Быстро изменить размер конкретного элемента в игре |
+| `ElementWorldModel.modelScale` | prefab модели | Изменить базовый размер всего primitive-prefab |
+| `sourceModelFitSize` | FBX-wrapper | Подогнать размер выбранного FBX-child |
+| `sourceModelOffset` | FBX-wrapper | Сместить модель относительно anchor |
+| `sourceModelEulerAngles` | FBX-wrapper | Повернуть модель |
+| `itemAnchors` | offering table | Изменить место предмета на конкретном столе |
 
-Пример: котел во второй комнате может требовать `torch`.
+Практическое правило: сначала менять `ElementDefinition.worldScale`, потом уже prefab модели. Не менять scale у самого offering table ради размера предметов.
 
-## Offering Table
+## Offering tables
 
-`OfferingTableInteractable` принимает конкретные элементы по одному и спавнит их 3D-визуалы на anchor points.
+`OfferingTableInteractable` принимает список `requiredItems`. Для каждого элемента можно назначить `itemAnchors`.
 
-Важные поля:
+Поведение:
 
-- `requiredItems` — какие элементы нужны.
-- `itemAnchors` — куда ставить каждый элемент.
-- `spawnedVisualsFollowAnchors` — если включено, spawned visuals следуют за anchors через `FollowTransform`.
-- `onCompleted` — UnityEvent, вызывается когда все элементы поставлены.
-- `Completed` — C# event для кода.
+- при взаимодействии ищется первый нужный элемент в инвентаре;
+- элемент расходуется через `Inventory.TryConsumeElement`;
+- на anchor создается `worldPrefab`;
+- если `spawnedVisualsFollowAnchors = true`, визуал получает `FollowTransform` и следует за anchor, даже если anchor на анимированной части стола;
+- когда все элементы поставлены, вызываются `Completed` и `onCompleted`.
 
-Визуалы не parent'ятся под root стола, поэтому не наследуют растянутый scale. Если `spawnedVisualsFollowAnchors` включен, они следуют за позициями и поворотами anchors в `LateUpdate`.
+Если предмет не появляется:
 
-## Анимация offering table в room_04
+1. Проверить `requiredItems`.
+2. Проверить `itemAnchors`.
+3. Проверить `ElementDefinition.worldPrefab`.
+4. Проверить Console.
+5. Временно заменить `worldPrefab` на primitive-prefab.
 
-Рекомендуемая схема для стола, который разъезжается и открывает проход:
+## Аудио взаимодействий
 
-1. У художников должен быть animated table prefab или объект из `Level-4` с `Animator`.
-2. Логический `PF_OfferingTable` можно оставить невидимым и нерастянутым.
-3. `itemAnchors` нужно положить дочерними объектами под те части стола, которые реально двигаются в анимации.
-4. В `OfferingTableInteractable` оставить `spawnedVisualsFollowAnchors = true`.
-5. В `onCompleted` добавить вызов на controller/Animator:
-   - `Animator.SetTrigger("Open")`, или
-   - метод контроллера вроде `OpenFinalPassage()`.
-6. Проход в room_05 лучше открывать по Animation Event в конце клипа: отключить blocking collider, включить trigger перехода, открыть/скрыть визуальную заглушку.
-
-Почему это работает: предметы не являются children растянутого логического стола, но каждый кадр следуют за anchors. Если anchor находится внутри animated table part, предмет двигается вместе с этой частью без деформации scale.
-
-Минимальный контроллер можно сделать таким:
+Все игровые SFX вызываются через:
 
 ```csharp
-using UnityEngine;
-
-public sealed class Room04OfferingTableController : MonoBehaviour
-{
-    [SerializeField] private Animator tableAnimator;
-    [SerializeField] private Collider finalRoomBlocker;
-    [SerializeField] private GameObject finalRoomTransition;
-
-    public void Open()
-    {
-        if (tableAnimator != null)
-            tableAnimator.SetTrigger("Open");
-    }
-
-    public void UnlockFinalRoom()
-    {
-        if (finalRoomBlocker != null)
-            finalRoomBlocker.enabled = false;
-
-        if (finalRoomTransition != null)
-            finalRoomTransition.SetActive(true);
-    }
-}
+GameAudio.Play(GameSoundId.UiClick);
 ```
 
-В `onCompleted` вызвать `Open()`. В конце animation clip вызвать `UnlockFinalRoom()` через Animation Event.
+или аналогичный `GameSoundId`.
 
-## Двери и переходы
+Сейчас старые звуки сохраняются как fallback: если пользовательский клип не настроен, `GameAudio` генерирует короткий звук кодом.
 
-`DoorInteractable` расходует нужный элемент из инвентаря и исчезает/отключается.
+### Как подставить свои звуки
 
-`RoomTransitionTrigger` переносит игрока к `targetSpawnPoint` и двигает камеру к `targetCameraPoint`. Игрок определяется по `PlayerMovement`.
+1. Открыть `Assets/Game/Audio/DefaultGameAudioProfile.asset`.
+2. В массив `Sounds` добавить запись.
+3. Выбрать `Sound Id`, например `CollectElement`, `CraftSuccess`, `DoorOpen`.
+4. Назначить `Audio Clip`.
+5. Настроить `Volume` и `Pitch Range`.
+6. Убедиться, что профиль назначен в `SceneInstaller` или что в сцене есть `Assets/Game/Prefabs/Music/PF_GameAudioController.prefab`.
 
-При добавлении перехода:
+Только заполненные `Sound Id` заменяются пользовательскими клипами. Все остальные продолжают играть fallback-звуки.
 
-1. Создать trigger collider.
-2. Добавить `RoomTransitionTrigger`.
-3. Указать `targetSpawnPoint`.
-4. Указать `targetCameraPoint`.
-5. Проверить, что `RoomCameraController` найден или назначен.
+### Основные Sound Id
+
+| Sound Id | Где используется |
+|---|---|
+| `UiClick` | Кнопки UI |
+| `UiDrag` | Начало перетаскивания |
+| `UiDrop` | Успешный drop |
+| `TableOpen` / `TableClose` | Открытие и закрытие craft table |
+| `CraftSuccess` / `CraftFail` | Результат крафта |
+| `CollectElement` | Подбор элемента |
+| `InventoryFull` | Нет места |
+| `Activate` | Активация стола |
+| `OfferingPlace` / `OfferingComplete` | Столы подношений |
+| `DoorOpen` / `Locked` | Двери и закрытые объекты |
+| `Trash` | Мусорка |
+| `GameOver` | Game over |
+
+## Фоновая музыка
+
+`AmbientMusicSwitcher` работает по trigger-зонам. Когда игрок входит в collider зоны, соответствующий `AudioSource` становится текущей фоновой музыкой.
+
+Если музыка не переключается:
+
+1. Проверить trigger collider.
+2. Проверить tag игрока.
+3. Проверить `AudioSource`.
+4. Проверить, не конфликтуют ли несколько зон.
+
+## UI: инвентарь и стол крафта
+
+UI создается runtime-кодом, но основные визуальные параметры вынесены в Inspector.
+
+### InventoryUI
+
+Настраивает:
+
+- стиль панели;
+- высоту панели;
+- стиль слота;
+- размер слота;
+- стартовую позицию и шаг слотов;
+- размер и позицию иконки;
+- размер текста.
+
+Иконки элементов увеличены относительно старой версии, чтобы не выглядеть слишком мелко.
+
+Обычные слоты инвентаря поддерживают drag/drop между собой: drop на пустой слот переносит элемент, drop на занятый слот меняет элементы местами. Вечный слот глины не участвует в перестановке, потому что глина не хранится в обычном `Inventory`.
+
+### CraftingPanelUI
+
+Настраивает:
+
+- размер и позицию панели;
+- стиль панели;
+- размер области стола;
+- sprite/color области стола;
+- размер item на столе;
+- размер и позицию иконки item;
+- размер подписи item.
+- фон item на столе через `Table Item Background Mode`.
+
+Элемент на столе сейчас выглядит компактнее и спокойнее, чем элемент в инвентаре: он лежит на рабочем фоне стола без обязательной плитки-слота. Это ожидаемый вид. Фон панели/области стола воспринимается как общий фон рабочего пространства, а личный фон элемента добавляется отдельно через `ElementDefinition`, если конкретному элементу нужен собственный бэк.
+
+Если у `ElementDefinition` включен личный `Ui Background Mode`, этот фон имеет приоритет над настройками craft table.
+
+`Table Item Background Mode`:
+
+- `None` - фон item полностью прозрачный. Это текущий рабочий вариант: на столе видны только иконка и подпись.
+- `ElementFallbackColor` - фон берется из `Fallback Color` в `ElementDefinition`. Это удобно, если нужно вернуть старые цветные плитки.
+- `CustomStyle` - фон берется из `Table Item Style`: можно назначить цвет, sprite и тип изображения.
+
+### Как добавить нормальный визуал панелей
+
+1. Подготовить sprites для панели инвентаря, слота, панели крафта и области стола.
+2. Если панели должны масштабироваться, открыть Sprite Editor и настроить borders.
+3. В `InventoryUI` назначить sprites в `Panel Visual` и `Slot Visual`.
+4. В `CraftingPanelUI` назначить sprites в `Panel Visual` и `Table Area Sprite`.
+5. Если нужен фон у предметов на столе, поставить `Table Item Background Mode = CustomStyle` и настроить `Table Item Style`.
+6. Если нужен фон только у конкретного элемента, открыть его `ElementDefinition`, поставить `Ui Background Mode = CustomStyle` и настроить `Ui Background Style`.
+7. Для sliced-панелей оставить `Image Type = Sliced`.
+8. Проверить Play Mode на разных разрешениях.
+
+## Подсказки при взаимодействии
+
+Для подсказок используются:
+
+- `InteractionHintOnInteract` - компонент на интерактивном объекте;
+- `InteractionHintWindow` - окно, которое показывает текст;
+- `Assets/Game/Prefabs/PF_InteractionHintWindow.prefab` - готовый prefab окна.
+
+`PF_InteractionHintWindow.prefab` необязателен. Если в сцене нет окна, первое взаимодействие создаст runtime-окно автоматически.
+
+### Как добавить подсказку объекту
+
+1. Убедиться, что объект уже имеет компонент с `IInteractable`.
+2. Добавить `InteractionHintOnInteract`.
+3. Заполнить `Message`.
+4. Настроить `Max Show Count`.
+5. Настроить `Placement`.
+6. Проверить позицию через `World Offset` и `Screen Offset`.
+
+Если нужен один текст на каждое взаимодействие, достаточно блока `Default Hint`. Если нужны разные тексты для разных состояний объекта, использовать массив `Rules`.
+
+### Поля InteractionHintOnInteract
+
+| Поле | Значение |
+|---|---|
+| `Message` | Текст подсказки |
+| `Max Show Count` | `1` - один раз, `0` - бесконечно, другое число - ограниченное количество |
+| `Duration` | Сколько секунд подсказка висит |
+| `Placement` | Центр экрана, рядом с объектом, custom world anchor или custom screen position |
+| `Custom World Anchor` | Точка в мире, если выбран custom world placement |
+| `World Offset` | Смещение от объекта/anchor |
+| `Screen Offset` | Смещение в UI-координатах |
+
+Визуал самого окна настраивается в `InteractionHintWindow` через `Window Style`: можно оставить текущий полупрозрачный цвет или назначить sprite.
+
+### Условные подсказки
+
+`Rules` проверяются сверху вниз. Показывается первое правило, условие которого подходит. Если массив `Rules` не пустой и ни одно правило не подошло, подсказка не показывается.
+
+Поля правила:
+
+| Поле | Значение |
+|---|---|
+| `Condition` | Условие показа |
+| `Message` | Текст именно для этого условия |
+| `Max Show Count` | Сколько раз это правило может показаться |
+| `Duration` | Сколько секунд висит этот текст |
+
+Условия для объектов с `IInteractionHintStateProvider`:
+
+| Condition | Когда подходит |
+|---|---|
+| `InactiveMissingRequiredItem` | Объект неактивен, нужного элемента нет в инвентаре |
+| `ActivatedByThisInteraction` | Это взаимодействие только что активировало объект |
+| `AlreadyActive` | Объект был активен еще до взаимодействия |
+| `InactiveHasRequiredItem` | Объект был неактивен, нужный элемент был в инвентаре |
+| `Inactive` | Объект был неактивен, без проверки инвентаря |
+| `Always` | Любое взаимодействие |
+
+Сейчас `IInteractionHintStateProvider` реализует `CraftTableInteractable`. Если позже другому интерактивному объекту нужны такие же условия, ему нужно отдать подсказкам состояние активности и требуемый элемент через этот интерфейс.
+
+Пример для котла во втором уровне:
+
+1. Добавить `InteractionHintOnInteract` на объект котла/стола.
+2. В `Rules` добавить 3 записи.
+3. Первое правило: `ActivatedByThisInteraction` - текст вроде "Котел разгорелся".
+4. Второе правило: `InactiveMissingRequiredItem` - текст вроде "Нужен факел".
+5. Третье правило: `AlreadyActive` - текст вроде "Котел готов к работе".
+6. Не использовать `Default Hint`, если все нужные состояния покрыты правилами.
 
 ## Game Over
 
-`GameOverController` использует static `IsGameOver`. Когда game over активен, движение и взаимодействие игрока должны останавливаться.
+`GameOverController` использует `GameOverController.IsGameOver`. Пока game over активен, движение и взаимодействие должны останавливаться.
 
-`CraftGameOverTrigger` слушает результат крафта и может запускать game over, если создан опасный элемент.
+`CraftGameOverTrigger` слушает событие `CraftingPanelUI.ElementCrafted` и вызывает game over, если создан заданный опасный элемент.
 
-## UI
+Как добавить game over на новый рецепт:
 
-UI собирается runtime-кодом:
-
-- `InventoryUI` строит слоты.
-- `CraftingPanelUI` строит craft panel.
-- `TableDropArea` принимает dragged элементы.
-- `TableItemUI` отвечает за предметы на craft table.
-
-Если меняется размер UI, сначала проверять serialized layout поля в `CraftingPanelUI` и `InventoryUI`.
-
-## Практические вопросы по системам
-
-### Как добавить новый источник элемента
-
-1. Создать или выбрать `ElementDefinition`.
-2. В сцене создать объект-источник.
-3. Добавить `ElementSourceInteractable`.
-4. В поле `element` назначить нужный `ElementDefinition`.
-5. Убедиться, что у объекта есть collider, до которого достает `PlayerInteractor`.
-
-Если игрок нажимает E, но ничего не происходит, проверить:
-
-- объект находится в радиусе raycast/sphere fallback;
-- collider не выключен;
-- `ElementSourceInteractable.element` не `None`;
-- инвентарь не полон.
-
-### Как добавить новый craft table
-
-1. Создать объект стола с collider.
-2. Добавить `CraftTableInteractable`.
-3. Создать или продублировать `CraftingPanelUI` для этого стола.
-4. В `SceneInstaller.craftTables` добавить новую запись.
-5. Указать `Table`, `Panel`, `tableId`, `roomId`.
-6. Добавить рецепты с тем же `roomId` в `MainCraftRecipeDatabase`.
-
-Если UI не открывается:
-
-- проверить, что стол добавлен в `SceneInstaller.craftTables`;
-- проверить, что `Panel` назначена;
-- проверить Console на `CraftTableInteractable has no CraftingPanelUI`;
-- убедиться, что `startsActive = true` или стол успешно активирован нужным элементом.
-
-### Как сделать стол, который нужно активировать предметом
-
-В `CraftTableInteractable`:
-
-- выключить `startsActive`;
-- назначить `requiredActivationElement`;
-- выбрать `consumeActivationElement`.
-
-Пример: если котел должен включаться факелом, назначить `torch` в `requiredActivationElement`. Если факел должен исчезать после активации, оставить `consumeActivationElement = true`.
-
-### Как понять, почему рецепт не работает
-
-Проверять в таком порядке:
-
-1. У craft table правильный `roomId`.
-2. В `MainCraftRecipeDatabase` есть рецепт с тем же `roomId`.
-3. Оба input назначены и это именно нужные `ElementDefinition`, а не похожие дубликаты.
-4. Result назначен.
-5. Рецепт не конфликтует с другим рецептом с тем же `roomId` и той же парой input.
-
-Порядок input не важен: `iron + wood` и `wood + iron` считаются одним рецептом.
-
-### Как добавить новую комнату
-
-1. Добавить визуальные объекты комнаты в сцену.
-2. Добавить spawn point для входа игрока.
-3. Добавить camera point для `RoomCameraController`.
-4. Создать trigger перехода с `RoomTransitionTrigger`.
-5. Указать `targetSpawnPoint` и `targetCameraPoint`.
-6. Если в комнате есть craft table, добавить ему новый `roomId` и рецепты.
-
-Если переход срабатывает странно:
-
-- проверить, что trigger collider имеет `isTrigger`;
-- проверить, что у игрока есть `PlayerMovement`;
-- проверить, что `targetSpawnPoint` не внутри стены/пола;
-- проверить, что `targetCameraPoint` назначен.
-
-### Как открыть проход после события
-
-Самый простой способ:
-
-1. Заблокировать проход collider'ом или неактивным transition trigger.
-2. Повесить метод открытия на `onCompleted` у `OfferingTableInteractable`, Animation Event или другой UnityEvent.
-3. В методе отключить blocker и включить переход/визуал прохода.
-
-Для анимированного стола лучше запускать анимацию сразу в `onCompleted`, а сам проход открывать Animation Event'ом в конце клипа.
-
-### Как настроить item anchors на offering table
-
-`itemAnchors` задают позиции, куда встанут предметы.
-
-- Чтобы предметы стояли дальше друг от друга, двигать anchors.
-- Чтобы предметы ехали вместе с анимированной частью стола, сделать anchor child этой части.
-- Не использовать scale anchors для размера предметов; размер менять через `ElementDefinition.worldScale`.
-- Для невидимого логического `PF_OfferingTable` важны collider и anchors, а не mesh renderer.
-
-### Как работает постоянная глина
-
-Глина — UI-only постоянный слот. Она не занимает один из 4 обычных слотов инвентаря. Если рецепт требует `clay`, UI крафта должен позволять использовать этот постоянный источник, а не искать глину в обычных слотах.
-
-Если кажется, что глина "не тратится", это ожидаемое поведение. Для одноразовых ингредиентов использовать обычные элементы и `Inventory.TryConsumeElement`.
-
-### Что делать, если инвентарь полон
-
-В инвентаре только 4 обычных слота. Если pickup или закрытие craft table не возвращает предмет:
-
-- освободить слот через trash bin;
-- проверить, не лежат ли предметы на craft table UI;
-- проверить, что предмет не помечен `discardOnTableClose`;
-- проверить Console на `Inventory is full`.
-
-### Как добавить game over на новый рецепт
-
-1. Создать элемент результата, который должен завершать игру.
+1. Создать элемент-результат.
 2. Добавить рецепт в `MainCraftRecipeDatabase`.
 3. На объекте с `CraftGameOverTrigger` назначить этот элемент в `gameOverElement`.
-4. Проверить, что `GameOverController` есть в сцене.
+4. Проверить наличие `GameOverController` в сцене.
 
-`CraftGameOverTrigger` слушает событие `CraftingPanelUI.ElementCrafted`, поэтому game over должен срабатывать именно после успешного крафта результата.
+## Room transitions
 
-### Как диагностировать UI drag-and-drop
+`RoomTransitionTrigger` переносит игрока к `RoomSpawnPoint` и переключает камеру через `RoomCameraController`.
 
-Если предмет не перетаскивается или не крафтится:
+Как добавить переход:
 
-- проверить, что в сцене есть `EventSystem`;
-- проверить, что Canvas назначен в `SceneInstaller`;
-- проверить, что `InventoryUI` настроен;
-- проверить, что craft panel активируется через `CraftTableInteractable`;
-- проверить, что у `TableDropArea` есть raycast target Image.
-
-### Когда нужно Reimport
-
-Делать reimport папки или ассета в Unity, если:
-
-- вручную менялись `.prefab`, `.asset`, `.meta`;
-- менялись ссылки на FBX;
-- Unity Inspector показывает старые значения;
-- модель в Play Mode выглядит так, будто prefab не обновился.
-
-Обычно достаточно reimport конкретной папки, например `Assets/Game/Art/Models`. `Reimport All` дольше, но помогает после больших YAML-изменений.
-
-### Что проверять перед коммитом
-
-1. `git status --short` — понять, какие файлы изменены.
-2. Не коммитить `Library/`, `Temp/`, `.dotnet/`, `.netfx-reference-assemblies/`.
-3. Запустить compile-check через локальный `.dotnet`.
-4. По возможности проверить Play Mode в Unity.
-5. Если менялись данные рецептов/элементов, проверить `DESIGN.md`, `DESIGNRU.md`, `TECHDOC.md`.
-
-## Проверочный чеклист
-
-После изменений в данных:
-
-1. Открыть `Room_v3.unity`.
-2. Запустить Play Mode.
-3. Проверить Console на ошибки загрузки ассетов.
-4. Проверить pickup элемента через E.
-5. Проверить craft table: открыть, перетащить 2 элемента, получить результат.
-6. Проверить offering table: поставить нужные элементы, убедиться что 3D-модели видны.
-7. Для animated offering table: убедиться, что anchors двигаются вместе с частями стола, а spawned visuals следуют за ними.
-8. Запустить compile-check через локальный `.NET SDK`.
+1. Создать trigger collider.
+2. Добавить `RoomTransitionTrigger`.
+3. Назначить `targetSpawnPoint`.
+4. Назначить `targetCameraPoint`.
+5. Проверить, что spawn point не внутри стены/пола.
 
 ## Частые проблемы
 
 | Симптом | Что проверить |
 |---|---|
-| Элемент не крафтится | `roomId`, оба input, наличие рецепта в DB |
-| Рецепт работает не в той комнате | `roomId` у `CraftTableInteractable` и в `CraftRecipeDatabase` |
-| Предмет не появляется на offering table | `worldPrefab`, `itemAnchors`, Console errors |
-| FBX-wrapper невидим | `sourceModel`, `sourceChildName`, `includeSourceNameVariants`, `sourceModelFitSize`; при ручном YAML проверить, что `sourceModel.fileID` равен root GameObject FBX, а не `100100000` |
-| Модель растягивается | root/parent scale, `spawnedVisualsFollowAnchors`, не parent'ить визуал под растянутый mesh |
-| Build через dotnet не стартует | использовать локальный `.dotnet`, `DOTNET_CLI_HOME`, проверить `.netfx-reference-assemblies` |
+| Элемент не подбирается | Collider, дистанция `PlayerInteractor`, `ElementSourceInteractable.element`, свободный слот |
+| Стол не открывается | `SceneInstaller.craftTables`, ссылка на panel, `startsActive`, activation element |
+| Рецепт не работает | `roomId`, input A/B, result, дубликаты рецептов |
+| Предмет не возвращается при закрытии стола | Свободные слоты, `discardOnTableClose`, предметы еще лежат на table UI |
+| Drag/drop не работает | `EventSystem`, Canvas, raycast target Image у drop area |
+| Offering visual не виден | `worldPrefab`, anchors, scale, Console errors |
+| FBX-wrapper не виден | `sourceModel`, `sourceChildName`, `includeSourceNameVariants`, `sourceModelFitSize` |
+| Звук не заменился | Профиль назначен, `Sound Id` совпадает, `AudioClip` не пустой |
+| Подсказка не появляется | Компонент на объекте с `IInteractable`, `Message` не пустой, `Max Show Count` не исчерпан |
+
+## Как тестировать игру в Unity
+
+Даже если в финальной версии игроку не нужно вручную перезагружать сцену, reload и повторный запуск Play Mode полезны как проверка, что глобальные состояния и UI не остаются в сломанном виде после предыдущей игровой сессии.
+
+### Базовый smoke-test
+
+1. Открыть `Assets/Scenes/Room_v3.unity`.
+2. Сохранить сцену, очистить Console и запустить Play Mode.
+3. Проверить, что нет красных ошибок и `SceneInstaller` установил ссылки.
+4. Проверить движение и взаимодействие через `E`.
+5. Подобрать элемент, открыть craft table, перетащить элемент из инвентаря на стол.
+6. Перетащить элемент между обычными слотами инвентаря и проверить перенос/обмен местами.
+7. Проверить удачный рецепт и неудачную пару.
+8. Закрыть стол и убедиться, что обычные предметы вернулись в инвентарь.
+9. Проверить постоянную глину: она должна оставаться доступной и не занимать обычный слот.
+10. Проверить offering table: предмет появляется на нужном anchor, дверь/прогрессия срабатывает.
+11. Проверить звуки pickup/drop/craft/table open/table close.
+12. Проверить подсказки на объектах с `InteractionHintOnInteract`, если они есть в сцене.
+13. Для UI-фона элемента временно включить `Ui Background Mode` у одного `ElementDefinition` и проверить инвентарь, craft table и drag-preview.
+
+### Проверка перезапуска и reload
+
+1. Запустить Play Mode, подобрать предметы, открыть/закрыть стол, затем остановить Play Mode и запустить его снова.
+2. Проверить, что инвентарь стартует чисто, движение работает, столы открываются, подсказки и звуки не дублируются.
+3. Довести игру до game over и нажать restart, если этот путь используется в текущей сборке.
+4. После restart проверить, что `Time.timeScale` снова `1`, `GameOverController.IsGameOver` сброшен, movement/interact работают.
+5. Если в Project Settings включены нестандартные `Enter Play Mode Options`, отдельно проверить запуск с domain reload и без него. Без domain reload static-поля могут переживать остановку Play Mode.
+
+### Что смотреть во время теста
+
+- В Console не должно быть `NullReferenceException`, ошибок загрузки prefab/sprite/audio и повторяющихся ошибок каждый кадр.
+- В Hierarchy не должны накапливаться лишние `GameAudio`, `InteractionHintWindow`, drag-объекты или предметы на столе после закрытия панели.
+- На craft table в режиме `Table Item Background Mode = None` у предметов не должно быть видимого квадратного фона.
+- Если у элемента включен личный `Ui Background Mode`, его фон должен быть одинаковым в инвентаре, на craft table и в drag-preview.
+- UI должен читаться в Game view на `1920x1080`, а также на более узком размере окна.
+
+## Что проверять перед коммитом
+
+1. `git status --short` - понять, какие файлы изменены.
+2. Не коммитить `Library/`, `Temp/`, `.dotnet/`, `.netfx-reference-assemblies/`.
+3. Запустить compile-check через локальный `.dotnet`, если менялся C#.
+4. Запустить Unity Play Mode, если менялась логика взаимодействий, UI, сцена, prefab или ScriptableObject.
+5. Если менялись данные рецептов/элементов/прогрессии, обновить `DESIGN.md`, `DESIGNRU.md`, `TECHDOC.md` и при необходимости `AGENTS.md`.

@@ -3,6 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum TableItemBackgroundMode
+{
+    None,
+    ElementFallbackColor,
+    CustomStyle
+}
+
 /// <summary>
 /// UI стола крафта.
 /// При закрытии возвращает обычные элементы в инвентарь.
@@ -24,12 +31,27 @@ public sealed class CraftingPanelUI : MonoBehaviour
     [SerializeField] private Vector2 panelSize = new Vector2(1050f, 650f);
     [SerializeField] private Vector2 panelPosition = new Vector2(0f, 40f);
 
+    [Header("Panel Visual")]
+    [SerializeField] private UIImageStyle panelStyle =
+        UIImageStyle.Create(new Color(0.055f, 0.045f, 0.035f, 0.92f), true);
+
     [Header("Table Area Layout")]
     [SerializeField] private Vector2 tableAreaSize = new Vector2(900f, 470f);
     [SerializeField] private Vector2 tableAreaPosition = new Vector2(0f, 0f);
 
     [Header("Table Item Layout")]
-    [SerializeField] private Vector2 tableItemSize = new Vector2(150f, 110f);
+    [SerializeField] private Vector2 tableItemSize = new Vector2(180f, 142f);
+    [SerializeField] private Vector2 tableItemIconSize = new Vector2(112f, 112f);
+    [SerializeField] private Vector2 tableItemIconPosition = new Vector2(0f, 30f);
+    [SerializeField] private int tableItemLabelFontSize = 16;
+    [SerializeField] private float tableItemLabelHeight = 34f;
+
+    [Header("Table Item Background")]
+    [Tooltip("None keeps table items visually transparent. ElementFallbackColor uses Element Definition color. CustomStyle uses Table Item Style.")]
+    [SerializeField] private TableItemBackgroundMode tableItemBackgroundMode = TableItemBackgroundMode.None;
+    [Tooltip("Used only when Table Item Background Mode is CustomStyle.")]
+    [SerializeField] private UIImageStyle tableItemStyle =
+        UIImageStyle.Create(new Color(0.16f, 0.13f, 0.1f, 0.82f), true);
 
     [Header("Text Layout")]
     [SerializeField] private Vector2 titlePosition = new Vector2(0f, -18f);
@@ -43,6 +65,7 @@ public sealed class CraftingPanelUI : MonoBehaviour
 
     [Header("Colors")]
     [SerializeField] private Color tableAreaColor = new Color(0.08f, 0.08f, 0.08f, 0.95f);
+    [SerializeField] private Sprite tableAreaSprite;
 
     private Canvas rootCanvas;
     private RectTransform tableArea;
@@ -92,6 +115,8 @@ public sealed class CraftingPanelUI : MonoBehaviour
 
         if (resultText != null)
             resultText.text = "Drag elements to the table";
+
+        GameAudio.Play(GameSoundId.TableOpen);
     }
 
     public void Close()
@@ -103,10 +128,12 @@ public sealed class CraftingPanelUI : MonoBehaviour
             if (resultText != null)
                 resultText.text = "Inventory is full";
 
+            GameAudio.Play(GameSoundId.InventoryFull);
             return;
         }
 
         gameObject.SetActive(false);
+        GameAudio.Play(GameSoundId.TableClose);
     }
 
     public void CreateTableItem(
@@ -124,12 +151,48 @@ public sealed class CraftingPanelUI : MonoBehaviour
         rectTransform.sizeDelta = tableItemSize;
         rectTransform.anchoredPosition = tablePosition;
 
-        Image image = itemObject.AddComponent<Image>();
-        image.color = element.FallbackColor;
-        image.raycastTarget = true;
+        Image backgroundImage = itemObject.AddComponent<Image>();
+        ApplyTableItemBackground(backgroundImage, element);
+
+        GameObject iconObject = new GameObject("Icon");
+        iconObject.transform.SetParent(itemObject.transform, false);
+
+        RectTransform iconRect = iconObject.AddComponent<RectTransform>();
+        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
+        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+        iconRect.pivot = new Vector2(0.5f, 0.5f);
+        iconRect.anchoredPosition = tableItemIconPosition;
+        iconRect.sizeDelta = tableItemIconSize;
+
+        Image iconImage = iconObject.AddComponent<Image>();
+        iconImage.preserveAspect = true;
+        iconImage.raycastTarget = false;
 
         if (element.Icon != null)
-            image.sprite = element.Icon;
+        {
+            iconImage.sprite = element.Icon;
+            iconImage.color = Color.white;
+        }
+        else
+        {
+            iconImage.sprite = null;
+            iconImage.color = element.FallbackColor;
+        }
+
+        Text label = UIFactory.CreateText(
+            parent: itemObject.transform,
+            name: "Label",
+            value: element.DisplayName,
+            fontSize: tableItemLabelFontSize,
+            alignment: TextAnchor.LowerCenter,
+            anchorMin: new Vector2(0f, 0f),
+            anchorMax: new Vector2(1f, 0f),
+            pivot: new Vector2(0.5f, 0f),
+            anchoredPosition: new Vector2(0f, 7f),
+            sizeDelta: new Vector2(-12f, tableItemLabelHeight)
+        );
+
+        label.raycastTarget = false;
 
         TableItemUI tableItem = itemObject.AddComponent<TableItemUI>();
         tableItem.Configure(
@@ -137,10 +200,38 @@ public sealed class CraftingPanelUI : MonoBehaviour
             this,
             tableArea,
             element,
-            shouldReturnToInventoryOnClose
+            shouldReturnToInventoryOnClose,
+            iconImage,
+            label
         );
 
         tableItems.Add(tableItem);
+    }
+
+    private void ApplyTableItemBackground(Image image, ElementDefinition element)
+    {
+        if (image == null)
+            return;
+
+        if (ElementUIBackgroundUtility.TryApplyPersonalBackground(element, image, true))
+            return;
+
+        if (tableItemBackgroundMode == TableItemBackgroundMode.CustomStyle)
+        {
+            if (tableItemStyle == null)
+                tableItemStyle = UIImageStyle.Create(new Color(0.16f, 0.13f, 0.1f, 0.82f), true);
+
+            ElementUIBackgroundUtility.ApplyStyle(tableItemStyle, image, true);
+            return;
+        }
+
+        if (tableItemBackgroundMode == TableItemBackgroundMode.ElementFallbackColor && element != null)
+        {
+            ElementUIBackgroundUtility.ApplyFallbackColor(element, image, true);
+            return;
+        }
+
+        ElementUIBackgroundUtility.ApplyTransparent(image, true);
     }
 
     public bool TryCraftTableItems(TableItemUI first, TableItemUI second, Vector2 resultPosition)
@@ -163,6 +254,7 @@ public sealed class CraftingPanelUI : MonoBehaviour
             if (resultText != null)
                 resultText.text = "No recipe";
 
+            GameAudio.Play(GameSoundId.CraftFail);
             return false;
         }
 
@@ -179,6 +271,7 @@ public sealed class CraftingPanelUI : MonoBehaviour
             resultText.text = "Created: " + result.DisplayName;
 
         NotifyElementCrafted(result);
+        GameAudio.Play(GameSoundId.CraftSuccess);
 
         return true;
     }
@@ -193,6 +286,7 @@ public sealed class CraftingPanelUI : MonoBehaviour
         if (CraftingSystem.Instance == null)
         {
             Debug.LogError("CraftingPanelUI: CraftingSystem instance not found");
+            GameAudio.Play(GameSoundId.CraftFail);
             return false;
         }
 
@@ -210,6 +304,8 @@ public sealed class CraftingPanelUI : MonoBehaviour
         {
             if (resultText != null)
                 resultText.text = "No recipe";
+
+            GameAudio.Play(GameSoundId.CraftFail);
 
             return false;
         }
@@ -241,6 +337,7 @@ public sealed class CraftingPanelUI : MonoBehaviour
             resultText.text = "Created: " + result.DisplayName;
 
         NotifyElementCrafted(result);
+        GameAudio.Play(GameSoundId.CraftSuccess);
 
         return true;
     }
@@ -328,6 +425,16 @@ public sealed class CraftingPanelUI : MonoBehaviour
         rectTransform.pivot = new Vector2(0.5f, 0.5f);
         rectTransform.anchoredPosition = panelPosition;
         rectTransform.sizeDelta = panelSize;
+
+        Image panelImage = GetComponent<Image>();
+
+        if (panelImage == null)
+            panelImage = gameObject.AddComponent<Image>();
+
+        if (panelStyle == null)
+            panelStyle = UIImageStyle.Create(new Color(0.055f, 0.045f, 0.035f, 0.92f), true);
+
+        panelStyle.ApplyTo(panelImage);
     }
 
     private void MarkOpened()
@@ -382,6 +489,8 @@ public sealed class CraftingPanelUI : MonoBehaviour
         tableRect.sizeDelta = tableAreaSize;
 
         Image tableImage = tableObject.AddComponent<Image>();
+        tableImage.sprite = tableAreaSprite;
+        tableImage.type = tableAreaSprite == null ? Image.Type.Simple : Image.Type.Sliced;
         tableImage.color = tableAreaColor;
         tableImage.raycastTarget = true;
 

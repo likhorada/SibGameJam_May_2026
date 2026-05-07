@@ -22,5 +22,6 @@ public sealed class TrashInteractable : MonoBehaviour, IInteractable
 
         Inventory.Instance.ClearAllNormalSlots();
         Debug.Log("TrashInteractable: inventory cleared");
+        GameAudio.Play(GameSoundId.Trash);
     }
 }

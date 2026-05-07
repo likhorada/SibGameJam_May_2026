@@ -9,6 +9,27 @@ public sealed class InventoryUI : MonoBehaviour
 {
     private const int PermanentClaySlotIndex = Inventory.NormalSlotCount;
 
+    [Header("Panel Visual")]
+    [SerializeField] private UIImageStyle panelStyle =
+        UIImageStyle.Create(new Color(0.06f, 0.055f, 0.05f, 0.9f), true);
+    [SerializeField] private float panelHeight = 134f;
+
+    [Header("Slot Visual")]
+    [SerializeField] private UIImageStyle slotStyle =
+        UIImageStyle.Create(new Color(0.18f, 0.16f, 0.13f, 0.95f), true);
+    [SerializeField] private Vector2 slotSize = new Vector2(124f, 104f);
+    [SerializeField] private float slotStartX = 168f;
+    [SerializeField] private float slotSpacing = 150f;
+
+    [Header("Element Visual")]
+    [SerializeField] private Vector2 iconSize = new Vector2(72f, 72f);
+    [SerializeField] private Vector2 iconPosition = new Vector2(0f, 22f);
+    [SerializeField] private int labelFontSize = 15;
+    [SerializeField] private float labelHeight = 30f;
+
+    [Header("Title")]
+    [SerializeField] private int titleFontSize = 18;
+
     private Canvas rootCanvas;
     private ElementDefinition clayElement;
     private bool configured;
@@ -55,9 +76,19 @@ public sealed class InventoryUI : MonoBehaviour
         rectTransform.anchorMax = new Vector2(1f, 0f);
         rectTransform.pivot = new Vector2(0.5f, 0f);
         rectTransform.anchoredPosition = Vector2.zero;
-        rectTransform.sizeDelta = new Vector2(0f, 120f);
+        rectTransform.sizeDelta = new Vector2(0f, panelHeight);
         rectTransform.offsetMin = new Vector2(0f, 0f);
-        rectTransform.offsetMax = new Vector2(0f, 120f);
+        rectTransform.offsetMax = new Vector2(0f, panelHeight);
+
+        Image panelImage = GetComponent<Image>();
+
+        if (panelImage == null)
+            panelImage = gameObject.AddComponent<Image>();
+
+        if (panelStyle == null)
+            panelStyle = UIImageStyle.Create(new Color(0.06f, 0.055f, 0.05f, 0.9f), true);
+
+        panelStyle.ApplyTo(panelImage);
     }
 
     private void BuildSlots()
@@ -68,7 +99,7 @@ public sealed class InventoryUI : MonoBehaviour
             parent: transform,
             name: "InventoryTitle",
             value: "Inventory",
-            fontSize: 18,
+            fontSize: titleFontSize,
             alignment: TextAnchor.MiddleLeft,
             anchorMin: new Vector2(0f, 0.5f),
             anchorMax: new Vector2(0f, 0.5f),
@@ -77,16 +108,13 @@ public sealed class InventoryUI : MonoBehaviour
             sizeDelta: new Vector2(120f, 70f)
         );
 
-        float startX = 160f;
-        float spacing = 140f;
-
         for (int i = 0; i < Inventory.NormalSlotCount; i++)
         {
-            Vector2 position = new Vector2(startX + spacing * i, 0f);
+            Vector2 position = new Vector2(slotStartX + slotSpacing * i, 0f);
             CreateNormalSlot(i, position);
         }
 
-        Vector2 clayPosition = new Vector2(startX + spacing * PermanentClaySlotIndex, 0f);
+        Vector2 clayPosition = new Vector2(slotStartX + slotSpacing * PermanentClaySlotIndex, 0f);
         CreatePermanentClaySlot(clayPosition);
     }
 
@@ -96,11 +124,24 @@ public sealed class InventoryUI : MonoBehaviour
             name: "InventorySlot_" + index,
             position: position,
             out Image background,
+            out Image elementBackground,
             out Image icon,
             out Text label
         );
 
-        slotUI.ConfigureNormalSlot(index, rootCanvas, background, icon, label);
+        slotUI.ConfigureNormalSlot(
+            index,
+            rootCanvas,
+            background,
+            elementBackground,
+            icon,
+            label,
+            slotSize,
+            iconSize,
+            iconPosition,
+            labelFontSize,
+            labelHeight
+        );
         slotUIs[index] = slotUI;
     }
 
@@ -110,6 +151,7 @@ public sealed class InventoryUI : MonoBehaviour
             name: "PermanentClaySlot",
             position: position,
             out Image background,
+            out Image elementBackground,
             out Image icon,
             out Text label
         );
@@ -117,9 +159,15 @@ public sealed class InventoryUI : MonoBehaviour
         slotUI.ConfigurePermanentElementSlot(
             rootCanvas,
             background,
+            elementBackground,
             icon,
             label,
-            clayElement
+            clayElement,
+            slotSize,
+            iconSize,
+            iconPosition,
+            labelFontSize,
+            labelHeight
         );
 
         slotUIs[PermanentClaySlotIndex] = slotUI;
@@ -129,6 +177,7 @@ public sealed class InventoryUI : MonoBehaviour
         string name,
         Vector2 position,
         out Image background,
+        out Image elementBackground,
         out Image icon,
         out Text label)
     {
@@ -140,11 +189,26 @@ public sealed class InventoryUI : MonoBehaviour
         rectTransform.anchorMax = new Vector2(0f, 0.5f);
         rectTransform.pivot = new Vector2(0.5f, 0.5f);
         rectTransform.anchoredPosition = position;
-        rectTransform.sizeDelta = new Vector2(110f, 90f);
+        rectTransform.sizeDelta = slotSize;
 
         background = slotObject.AddComponent<Image>();
-        background.color = new Color(0.18f, 0.18f, 0.18f, 1f);
-        background.raycastTarget = true;
+        if (slotStyle == null)
+            slotStyle = UIImageStyle.Create(new Color(0.18f, 0.16f, 0.13f, 0.95f), true);
+
+        slotStyle.ApplyTo(background);
+
+        GameObject elementBackgroundObject = new GameObject("ElementBackground");
+        elementBackgroundObject.transform.SetParent(slotObject.transform, false);
+
+        RectTransform elementBackgroundRect = elementBackgroundObject.AddComponent<RectTransform>();
+        elementBackgroundRect.anchorMin = Vector2.zero;
+        elementBackgroundRect.anchorMax = Vector2.one;
+        elementBackgroundRect.pivot = new Vector2(0.5f, 0.5f);
+        elementBackgroundRect.anchoredPosition = Vector2.zero;
+        elementBackgroundRect.sizeDelta = Vector2.zero;
+
+        elementBackground = elementBackgroundObject.AddComponent<Image>();
+        ElementUIBackgroundUtility.ApplyTransparent(elementBackground, false);
 
         GameObject iconObject = new GameObject("Icon");
         iconObject.transform.SetParent(slotObject.transform, false);
@@ -153,8 +217,8 @@ public sealed class InventoryUI : MonoBehaviour
         iconRect.anchorMin = new Vector2(0.5f, 0.5f);
         iconRect.anchorMax = new Vector2(0.5f, 0.5f);
         iconRect.pivot = new Vector2(0.5f, 0.5f);
-        iconRect.anchoredPosition = new Vector2(0f, 10f);
-        iconRect.sizeDelta = new Vector2(48f, 48f);
+        iconRect.anchoredPosition = iconPosition;
+        iconRect.sizeDelta = iconSize;
 
         icon = iconObject.AddComponent<Image>();
         icon.preserveAspect = true;
@@ -165,13 +229,13 @@ public sealed class InventoryUI : MonoBehaviour
             parent: slotObject.transform,
             name: "Label",
             value: "Empty",
-            fontSize: 13,
+            fontSize: labelFontSize,
             alignment: TextAnchor.LowerCenter,
-            anchorMin: Vector2.zero,
-            anchorMax: Vector2.one,
-            pivot: new Vector2(0.5f, 0.5f),
-            anchoredPosition: new Vector2(0f, 4f),
-            sizeDelta: Vector2.zero
+            anchorMin: new Vector2(0f, 0f),
+            anchorMax: new Vector2(1f, 0f),
+            pivot: new Vector2(0.5f, 0f),
+            anchoredPosition: new Vector2(0f, 6f),
+            sizeDelta: new Vector2(-10f, labelHeight)
         );
 
         label.raycastTarget = false;

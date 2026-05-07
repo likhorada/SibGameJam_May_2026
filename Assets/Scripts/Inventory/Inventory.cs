@@ -119,6 +119,33 @@ public sealed class Inventory : MonoBehaviour
         return true;
     }
 
+    public bool TryMoveOrSwapSlots(int fromIndex, int toIndex)
+    {
+        Initialize();
+
+        if (!IsValidIndex(fromIndex) || !IsValidIndex(toIndex))
+            return false;
+
+        if (fromIndex == toIndex)
+            return false;
+
+        if (slots[fromIndex].IsEmpty)
+            return false;
+
+        ElementDefinition sourceElement = slots[fromIndex].Element;
+        ElementDefinition targetElement = slots[toIndex].Element;
+
+        slots[toIndex].Set(sourceElement);
+
+        if (targetElement == null)
+            slots[fromIndex].Clear();
+        else
+            slots[fromIndex].Set(targetElement);
+
+        NotifyChanged();
+        return true;
+    }
+
     public bool HasElement(ElementDefinition element)
     {
         Initialize();

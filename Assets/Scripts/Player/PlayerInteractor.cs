@@ -36,7 +36,10 @@ public sealed class PlayerInteractor : MonoBehaviour
         }
 
         Debug.Log("PlayerInteractor: interacting with " + interactable.GetType().Name);
+        InteractionHintContext hintContext = InteractionHintContext.CaptureBefore(interactable);
         interactable.Interact(this);
+        hintContext.CaptureAfter();
+        InteractionHintOnInteract.TryShowFor(interactable, hintContext);
     }
 
     private IInteractable FindByRaycast()

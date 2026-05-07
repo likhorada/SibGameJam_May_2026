@@ -16,6 +16,13 @@ MonoBehaviour:
   displayName: Magic Wand
   icon: {fileID: 21300000, guid: 5a94b7f12da64250a1f94b9f37389633, type: 3}
   fallbackColor: {r: 0.8, g: 0.6, b: 0.3, a: 1}
+  uiBackgroundMode: 0
+  uiBackgroundStyle:
+    sprite: {fileID: 0}
+    imageType: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    preserveAspect: 0
+    raycastTarget: 0
   worldPrefab: {fileID: 100000, guid: 1f042892de15609ca5574f4b9f705b1a, type: 3}
-  worldScale: {x: 1, y: 1, z: 1}
+  worldScale: {x: 1.3, y: 1.3, z: 1.3}
   discardOnTableClose: 0

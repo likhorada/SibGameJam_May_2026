@@ -82,6 +82,7 @@ public static class UIFactory
         image.raycastTarget = true;
 
         Button button = buttonObject.AddComponent<Button>();
+        button.onClick.AddListener(GameAudio.PlayUiClick);
 
         Text text = CreateText(
             parent: buttonObject.transform,

@@ -13,6 +13,8 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
     private RectTransform tableArea;
     private RectTransform rectTransform;
     private CanvasGroup canvasGroup;
+    private Image iconImage;
+    private Text label;
 
     private Vector2 previousTablePosition;
     private Vector2 originalSizeDelta;
@@ -31,13 +33,17 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
         CraftingPanelUI craftingPanel,
         RectTransform tableArea,
         ElementDefinition element,
-        bool shouldReturnToInventoryOnClose)
+        bool shouldReturnToInventoryOnClose,
+        Image iconImage,
+        Text label)
     {
         this.rootCanvas = rootCanvas;
         this.craftingPanel = craftingPanel;
         this.tableArea = tableArea;
         this.Element = element;
         this.ShouldReturnToInventoryOnClose = shouldReturnToInventoryOnClose;
+        this.iconImage = iconImage;
+        this.label = label;
 
         rectTransform = transform as RectTransform;
         originalSizeDelta = rectTransform.sizeDelta;
@@ -46,30 +52,14 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
 
         ResetRectTransform();
 
-        Image image = GetComponent<Image>();
-        image.color = element.FallbackColor;
-        image.preserveAspect = true;
-
-        if (element.Icon != null)
+        if (this.iconImage != null && element.Icon != null)
         {
-            image.sprite = element.Icon;
-            image.color = Color.white;
+            this.iconImage.sprite = element.Icon;
+            this.iconImage.color = Color.white;
         }
 
-        Text label = UIFactory.CreateText(
-            parent: transform,
-            name: "Label",
-            value: element.DisplayName,
-            fontSize: 13,
-            alignment: TextAnchor.LowerCenter,
-            anchorMin: Vector2.zero,
-            anchorMax: Vector2.one,
-            pivot: new Vector2(0.5f, 0.5f),
-            anchoredPosition: Vector2.zero,
-            sizeDelta: Vector2.zero
-        );
-
-        label.raycastTarget = false;
+        if (this.label != null)
+            this.label.text = element.DisplayName;
     }
 
     public Vector2 GetTablePosition()
@@ -100,6 +90,7 @@ public sealed class TableItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler
         Vector3 dragScale = GetScaleRelativeToRootCanvas();
 
         DragContext.BeginFromTable(this, Element);
+        GameAudio.Play(GameSoundId.UiDrag);
 
         canvasGroup.blocksRaycasts = false;
 

@@ -8,16 +8,19 @@ using UnityEngine.UI;
 /// </summary>
 public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
-    private static readonly Color SlotBackgroundColor = new Color(0.18f, 0.18f, 0.18f, 1f);
-    private static readonly Color TransparentColor = new Color(0f, 0f, 0f, 0f);
-
     private int slotIndex;
     private bool isPermanentElementSlot;
 
     private Canvas rootCanvas;
     private Image background;
+    private Image elementBackground;
     private Image icon;
     private Text label;
+    private Vector2 slotSize = new Vector2(124f, 104f);
+    private Vector2 iconSize = new Vector2(72f, 72f);
+    private Vector2 iconPosition = new Vector2(0f, 22f);
+    private int dragLabelFontSize = 15;
+    private float dragLabelHeight = 30f;
 
     private GameObject dragGhost;
     private RectTransform dragGhostRect;
@@ -28,14 +31,26 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         int slotIndex,
         Canvas rootCanvas,
         Image background,
+        Image elementBackground,
         Image icon,
-        Text label)
+        Text label,
+        Vector2 slotSize,
+        Vector2 iconSize,
+        Vector2 iconPosition,
+        int dragLabelFontSize,
+        float dragLabelHeight)
     {
         this.slotIndex = slotIndex;
         this.rootCanvas = rootCanvas;
         this.background = background;
+        this.elementBackground = elementBackground;
         this.icon = icon;
         this.label = label;
+        this.slotSize = slotSize;
+        this.iconSize = iconSize;
+        this.iconPosition = iconPosition;
+        this.dragLabelFontSize = dragLabelFontSize;
+        this.dragLabelHeight = dragLabelHeight;
         this.isPermanentElementSlot = false;
 
         SetEmpty();
@@ -44,15 +59,27 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
     public void ConfigurePermanentElementSlot(
         Canvas rootCanvas,
         Image background,
+        Image elementBackground,
         Image icon,
         Text label,
-        ElementDefinition permanentElement)
+        ElementDefinition permanentElement,
+        Vector2 slotSize,
+        Vector2 iconSize,
+        Vector2 iconPosition,
+        int dragLabelFontSize,
+        float dragLabelHeight)
     {
         this.slotIndex = -1;
         this.rootCanvas = rootCanvas;
         this.background = background;
+        this.elementBackground = elementBackground;
         this.icon = icon;
         this.label = label;
+        this.slotSize = slotSize;
+        this.iconSize = iconSize;
+        this.iconPosition = iconPosition;
+        this.dragLabelFontSize = dragLabelFontSize;
+        this.dragLabelHeight = dragLabelHeight;
         this.isPermanentElementSlot = true;
 
         SetElement(permanentElement);
@@ -82,6 +109,7 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         else
             DragContext.BeginFromInventory(slotIndex, element);
 
+        GameAudio.Play(GameSoundId.UiDrag);
         CreateDragGhost(eventData);
     }
 
@@ -101,10 +129,16 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         if (!DragContext.HasActiveDrag)
             return;
 
-        if (DragContext.SourceType != DragSourceType.TableItem)
+        if (isPermanentElementSlot)
             return;
 
-        if (isPermanentElementSlot)
+        if (DragContext.SourceType == DragSourceType.InventorySlot)
+        {
+            MoveOrSwapInventorySlot();
+            return;
+        }
+
+        if (DragContext.SourceType != DragSourceType.TableItem)
             return;
 
         if (element != null)
@@ -128,6 +162,27 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
 
         tableItem.DestroySelf();
         DragContext.MarkHandled();
+        GameAudio.Play(GameSoundId.UiDrop);
+    }
+
+    private void MoveOrSwapInventorySlot()
+    {
+        if (Inventory.Instance == null)
+        {
+            Debug.LogError("InventorySlotUI: Inventory instance not found");
+            return;
+        }
+
+        bool moved = Inventory.Instance.TryMoveOrSwapSlots(
+            DragContext.InventorySlotIndex,
+            slotIndex
+        );
+
+        if (!moved)
+            return;
+
+        DragContext.MarkHandled();
+        GameAudio.Play(GameSoundId.UiDrop);
     }
 
     private void SetElement(ElementDefinition newElement)
@@ -141,9 +196,7 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         }
 
         label.text = element.DisplayName;
-
-        if (background != null)
-            background.color = SlotBackgroundColor;
+        ApplyElementBackground();
 
         if (icon == null)
             return;
@@ -169,14 +222,13 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         if (label != null)
             label.text = "Empty";
 
-        if (background != null)
-            background.color = SlotBackgroundColor;
-
         if (icon != null)
         {
             icon.sprite = null;
             icon.enabled = false;
         }
+
+        ElementUIBackgroundUtility.ApplyTransparent(elementBackground, false);
     }
 
     private void CreateDragGhost(PointerEventData eventData)
@@ -185,11 +237,11 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
         dragGhost.transform.SetParent(rootCanvas.transform, false);
 
         dragGhostRect = dragGhost.AddComponent<RectTransform>();
-        dragGhostRect.sizeDelta = new Vector2(110f, 90f);
+        dragGhostRect.sizeDelta = slotSize;
 
         Image backgroundImage = dragGhost.AddComponent<Image>();
-        backgroundImage.color = TransparentColor;
-        backgroundImage.raycastTarget = false;
+        if (!ElementUIBackgroundUtility.TryApplyPersonalBackground(element, backgroundImage, false))
+            ElementUIBackgroundUtility.ApplyTransparent(backgroundImage, false);
 
         if (element.Icon != null)
         {
@@ -200,8 +252,8 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
             iconRect.anchorMin = new Vector2(0.5f, 0.5f);
             iconRect.anchorMax = new Vector2(0.5f, 0.5f);
             iconRect.pivot = new Vector2(0.5f, 0.5f);
-            iconRect.anchoredPosition = new Vector2(0f, 10f);
-            iconRect.sizeDelta = new Vector2(48f, 48f);
+            iconRect.anchoredPosition = iconPosition;
+            iconRect.sizeDelta = iconSize;
 
             Image iconImage = iconObject.AddComponent<Image>();
             iconImage.sprite = element.Icon;
@@ -214,13 +266,13 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
             parent: dragGhost.transform,
             name: "Text",
             value: element.DisplayName,
-            fontSize: 14,
+            fontSize: dragLabelFontSize,
             alignment: TextAnchor.LowerCenter,
-            anchorMin: Vector2.zero,
-            anchorMax: Vector2.one,
-            pivot: new Vector2(0.5f, 0.5f),
-            anchoredPosition: Vector2.zero,
-            sizeDelta: Vector2.zero
+            anchorMin: new Vector2(0f, 0f),
+            anchorMax: new Vector2(1f, 0f),
+            pivot: new Vector2(0.5f, 0f),
+            anchoredPosition: new Vector2(0f, 6f),
+            sizeDelta: new Vector2(-10f, dragLabelHeight)
         );
 
         text.raycastTarget = false;
@@ -253,5 +305,11 @@ public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHan
 
         dragGhost = null;
         dragGhostRect = null;
+    }
+
+    private void ApplyElementBackground()
+    {
+        if (!ElementUIBackgroundUtility.TryApplyPersonalBackground(element, elementBackground, false))
+            ElementUIBackgroundUtility.ApplyTransparent(elementBackground, false);
     }
 }

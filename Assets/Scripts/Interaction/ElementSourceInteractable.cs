@@ -34,6 +34,7 @@ public sealed class ElementSourceInteractable : MonoBehaviour, IInteractable
             return;
         }
 
-        Inventory.Instance.AddElement(element);
+        bool added = Inventory.Instance.AddElement(element);
+        GameAudio.Play(added ? GameSoundId.CollectElement : GameSoundId.InventoryFull);
     }
 }

@@ -39,6 +39,7 @@ public sealed class GameOverController : MonoBehaviour
         isGameOver = true;
         IsGameOver = true;
         BuildOverlay();
+        GameAudio.Play(GameSoundId.GameOver);
 
         if (pauseGameOnGameOver)
             Time.timeScale = 0f;

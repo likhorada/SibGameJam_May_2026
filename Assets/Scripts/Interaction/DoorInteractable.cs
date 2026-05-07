@@ -45,6 +45,7 @@ public sealed class DoorInteractable : MonoBehaviour, IInteractable
         if (unlocked)
         {
             Debug.Log("Door is already open");
+            GameAudio.Play(GameSoundId.CraftFail);
             return;
         }
 
@@ -65,6 +66,7 @@ public sealed class DoorInteractable : MonoBehaviour, IInteractable
         if (!consumed)
         {
             Debug.Log("Door is locked. Required element: " + requiredElement.DisplayName);
+            GameAudio.Play(GameSoundId.Locked);
             return;
         }
 
@@ -76,6 +78,7 @@ public sealed class DoorInteractable : MonoBehaviour, IInteractable
         unlocked = true;
 
         Debug.Log("Door opened: " + gameObject.name);
+        GameAudio.Play(GameSoundId.DoorOpen);
 
         if (blockingCollider != null)
             blockingCollider.enabled = false;

@@ -76,6 +76,7 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
         if (IsCompleted())
         {
             Debug.Log(gameObject.name + ": all required items are already placed");
+            GameAudio.Play(GameSoundId.CraftFail);
             return;
         }
 
@@ -84,6 +85,7 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
         if (itemIndex < 0)
         {
             Debug.Log(gameObject.name + ": no required item in inventory");
+            GameAudio.Play(GameSoundId.Locked);
             return;
         }
 
@@ -94,6 +96,7 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
         if (!consumed)
         {
             Debug.Log(gameObject.name + ": failed to consume " + element.DisplayName);
+            GameAudio.Play(GameSoundId.CraftFail);
             return;
         }
 
@@ -101,6 +104,7 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
         SpawnItemVisual(itemIndex, element);
 
         Debug.Log(gameObject.name + ": placed " + element.DisplayName);
+        GameAudio.Play(GameSoundId.OfferingPlace);
 
         if (IsCompleted())
             OnCompleted();
@@ -215,6 +219,7 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
     private void OnCompleted()
     {
         Debug.Log(gameObject.name + ": offering table completed");
+        GameAudio.Play(GameSoundId.OfferingComplete);
         Completed?.Invoke();
         onCompleted.Invoke();
 

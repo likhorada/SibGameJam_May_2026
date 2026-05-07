@@ -5,6 +5,7 @@ using UnityEngine;
 public class AmbientMusicSwitcher : MonoBehaviour
 {
     [SerializeField] private string triggerTag = "Player";
+    [SerializeField] private bool loopAmbient = true;
 
     private static AudioSource currentAmbientSource;
     private AudioSource musicSource;
@@ -12,12 +13,30 @@ public class AmbientMusicSwitcher : MonoBehaviour
     private void Awake()
     {
         musicSource = GetComponent<AudioSource>();
+        musicSource.loop = loopAmbient;
 
         var areaCollider = GetComponent<Collider>();
         areaCollider.isTrigger = true;
     }
 
     private void OnTriggerEnter(Collider other)
+    {
+        TryActivateAmbient(other);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (currentAmbientSource == musicSource && !musicSource.isPlaying)
+            TryActivateAmbient(other);
+    }
+
+    private void OnDisable()
+    {
+        if (currentAmbientSource == musicSource)
+            currentAmbientSource = null;
+    }
+
+    private void TryActivateAmbient(Collider other)
     {
         if (!string.IsNullOrEmpty(triggerTag) && !other.CompareTag(triggerTag))
         {
@@ -26,6 +45,9 @@ public class AmbientMusicSwitcher : MonoBehaviour
 
         if (currentAmbientSource == musicSource)
         {
+            if (!musicSource.isPlaying)
+                musicSource.Play();
+
             return;
         }
 

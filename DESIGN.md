@@ -1,227 +1,189 @@
-# DESIGN.md — Golem Craft
+# DESIGN.md - Golem Craft
 
 ## Overview
 
-**SibGameJam_May_2026** — a 3D room-exploration crafting game made for a game jam.
-The player controls a golem made of clay, explores interconnected rooms, collects alchemical elements, and combines them at craft tables to create new substances.
+`SibGameJam_May_2026` is a 3D room-exploration crafting game. The player controls a clay golem, collects alchemical elements, combines them in pairs at room-specific craft tables, and uses crafted artifacts to unlock later rooms and the finale.
 
 ## Core Loop
 
-1. **Explore** rooms via doorways/transitions
-2. **Collect** base elements from infinite sources (press **E**)
-3. **Craft** at tables by dragging elements together
-4. **Use** crafted elements to unlock doors, activate tables, or complete offerings
-5. **Repeat** across progressively harder rooms
+1. Explore connected rooms.
+2. Collect base elements from infinite sources with `E`.
+3. Open craft tables and drag two elements together.
+4. Use crafted elements to activate tables, unlock passages, or complete offering tables.
+5. Repeat with deeper cross-room recipes.
 
 ## Controls
 
 | Input | Action |
 |---|---|
-| WASD / Arrows | Move (camera-relative) |
-| E | Interact (raycast 2.4m, sphere fallback 1.8m) |
+| WASD / Arrows | Move, camera-relative |
+| E | Interact by raycast 2.4m, then overlap fallback 1.8m |
 | Escape | Close crafting panel |
 
-## Player
+## Player And Inventory
 
-- Movement via `Rigidbody` (physics-based, no teleportation)
-- Camera is always the highest-depth active camera; movement aligns to it
-- **4 inventory slots** for regular items
-- **1 permanent clay slot** — clay is always available, shown in UI but not stored in inventory
+- Movement uses `Rigidbody`.
+- The active camera with the highest depth defines camera-relative movement.
+- Inventory has 4 normal item slots.
+- Clay is permanent and UI-only. It appears as an extra slot, but is not stored in `Inventory`.
 
 ## Rooms
 
-| Room | ID | Description | Craft Table |
-|---|---|---|---|
-| Level 1 (starter) | `room_01` | Forge (workbench/anvil/furnace). Basic materials: iron, flint, coal, wood, air | Craft Table |
-| Level 2 | `room_02` | Wet room (boiler). Water-based chemistry: water, saltpeter, lime, vitriol. Requires **torch** to activate. | Craft Table |
-| Level 3 | `room_03` | Pantry (master workbench). Organic/fermentation: herbs, berries, horn. Yeast available from room_04 for crafting here. | Craft Table |
-| Level 4 | `room_04` | Alchemist's study. Offering table for 3 key artifacts to unlock room_05. Elements: cinnabar, chest, yeast. | **Offering Table (×1)** |
-| Level 5 | `room_05` | Magic chamber. 4 separate offering tables — place 1 key element on each to trigger the finale. | **4 separate Offering Tables** |
+| Room | ID | Description | Table | Sources |
+|---|---|---|---|---|
+| Level 1 | `room_01` | Forge: workbench, anvil, furnace | Craft Table | iron, flint, coal, wood, air |
+| Level 2 | `room_02` | Wet room: boiler, activated with torch | Craft Table | water, saltpeter, lime, vitriol |
+| Level 3 | `room_03` | Pantry: master workbench, organic recipes | Craft Table | herbs, berries, horn |
+| Level 4 | `room_04` | Alchemist study, unlocks finale | Offering Table x1 | cinnabar, chest, yeast |
+| Level 5 | `room_05` | Magic chamber finale | Offering Tables x4 | none |
 
-Rooms are laid out along the Z-axis in a single scene (`Room_v3.unity`), connected by `RoomTransitionTrigger` colliders that teleport the player and smoothly or instantly switch the camera.
+Rooms are placed in one scene, `Assets/Scenes/Room_v3.unity`, and connected by `RoomTransitionTrigger` colliders.
 
 ## Interactable Types
 
 | Type | Behaviour |
 |---|---|
-| **Element Source** | Infinite pickup — press E to add element to inventory |
-| **Craft Table** | Opens crafting UI; may require an activation element first (e.g., torch to activate boiler) |
-| **Door** | Consumes a required element from inventory to unlock, then disappears |
-| **Offering Table** | Accepts specific items one at a time, spawns 3D visuals, then invokes completion events for animation/unlock logic |
-| **Trash Bin** | Clears all 4 inventory slots (clay slot unaffected) |
+| Element Source | Infinite pickup. Adds an element to the first free inventory slot. |
+| Craft Table | Opens the craft UI, or first consumes an activation element if locked. |
+| Door | Consumes a required element, disables blocking, then hides or opens. |
+| Offering Table | Consumes specific elements one at a time, spawns 3D visuals, then invokes completion events. |
+| Trash Bin | Clears the 4 normal inventory slots. Clay is unaffected. |
+| Interaction Hint | Optional `InteractionHintOnInteract` popup after interaction. Can use state-based rules for objects that expose hint state. |
 
 ## Crafting System
 
-- **Elements are always combined in pairs** — every recipe requires exactly 2 inputs and produces 1 result
-- Recipes are **room-scoped** — same two elements can produce different results in different rooms
-- **Cross-room element usage** — player can pick up elements in one room and carry them to a table in another room (e.g., yeast source is in room_04 but used in recipes at room_03 table)
-- **Input order does not matter** — `CraftKey` normalizes alphabetically
-- Crafting is done in the **UI overlay** by dragging items onto the table area, then dragging one item onto another
-- When the crafting panel closes, regular items return to inventory; items marked `discardOnTableClose` are destroyed
+- Every recipe has exactly 2 inputs and 1 result.
+- Recipes are scoped by `roomId`.
+- Input order does not matter. `CraftKey` sorts element ids.
+- Cross-room usage is intentional: an element found in one room can be used at another room's table.
+- The craft UI accepts dragged items from normal inventory slots, the permanent clay slot, and existing table items.
+- When closing the craft panel, regular table items return to inventory if enough slots are free.
+- Items with `discardOnTableClose` disappear on close.
 
 ## Elements
 
-### Base Elements (pickup sources)
+### Base Sources
 
-| Element | Rooms Found | Notes |
+| Element | Found In | Notes |
 |---|---|---|
-| **Clay** | Always available | Permanent slot — always in inventory, never consumed |
-| **Iron** | room_01 | Base metal |
-| **Flint** | room_01 | Spark stone |
-| **Coal** | room_01 | Fuel |
-| **Wood** | room_01 | Basic material |
-| **Air** | room_01 | Universal reactant |
-| **Water** | room_02 | Universal solvent |
-| **Saltpeter** | room_02 | Reactive mineral |
-| **Lime** | room_02 | Building material |
-| **Vitriol** | room_02 | Acidic mineral |
-| **Herbs** | room_03 | Medicinal plant |
-| **Berries** | room_03 | Organic |
-| **Horn** | room_03 | Animal material |
-| **Yeast** | room_04 | Fermentation agent |
-| **Cinnabar** | room_04 | Red mineral (also used in room_01 recipe) |
-| **Chest** | room_04 | Mystery element |
+| clay | permanent | Always available through the UI-only slot |
+| iron | `room_01` | Base metal |
+| flint | `room_01` | Spark stone |
+| coal | `room_01` | Fuel |
+| wood | `room_01` | Basic material |
+| air | `room_01` | Universal reactant |
+| water | `room_02` | Solvent |
+| saltpeter | `room_02` | Reactive mineral |
+| lime | `room_02` | Building material |
+| vitriol | `room_02` | Acidic mineral |
+| herbs | `room_03` | Medicinal plant |
+| berries | `room_03` | Organic ingredient |
+| horn | `room_03` | Organic material |
+| yeast | `room_04` | Fermentation agent |
+| cinnabar | `room_04` | Red mineral |
+| chest | `room_04` | Mystery element |
 
 ### World Visuals
 
-Every `ElementDefinition` has a generated or imported `worldPrefab`. Default models live in `Assets/Game/Prefabs/ElementWorldModels/` and use `ElementWorldModel` to build recognizable low-poly primitive shapes at runtime. When a suitable textured prop exists in the level FBX, the element may instead point to a wrapper prefab in `Assets/Game/Art/Models/` that displays only the named FBX child mesh.
+`ElementDefinition.worldPrefab` controls the 3D model used by offering tables. Default generated models live in `Assets/Game/Prefabs/ElementWorldModels/`. Imported wrapper prefabs live in `Assets/Game/Art/Models/` and can show a named child mesh from a level FBX.
 
-### Crafted Elements (recipes)
+## Recipe Table
 
-Recipes are stored in `MainCraftRecipeDatabase` in `Assets/Game/Crafting/`. Each room has multiple crafting recipes that combine two input elements into one result. See the database asset for the complete list.
+### `room_01` - Forge
 
-#### New Elements (proposed)
+| Input A | Input B | Result |
+|---|---|---|
+| iron | flint | firesteel |
+| firesteel | coal | fire |
+| fire | wood | torch |
+| clay | iron | ore |
+| ore | fire | copper |
+| copper | wood | mechanism |
+| clay | wood | paper |
+| air | clay | dust |
 
-| ID | Name | Type | Purpose |
-|---|---|---|---|
-| `paper` | Paper | intermediate | clay + wood |
-| `mechanism` | Mechanism | intermediate | primary: copper + wood in room_01; alternate schematic assembly in room_03 |
-| `blank_scroll` | Blank Scroll | intermediate | paper + wood |
-| `ancient_scroll` | Ancient Scroll | **KEY room_04** | mechanism + blank_scroll |
-| `base_stone` | Base Stone | intermediate | acid + gypsum |
-| `philosopher_stone` | Philosopher's Stone | **KEY room_04** | base_stone + elixir |
-| `magic_wand` | Magic Wand | **KEY room_04** | torch + copper |
-| `vessel` | Vessel | intermediate | mechanism + air |
-| `spirit` | Spirit | **KEY room_05** | vessel + fire |
-| `mind` | Mind | **KEY room_05** | tincture + wine |
-| `body` | Body | **KEY room_05** | clay + copper |
-| `soul_essence` | Soul Essence | intermediate | tincture + wine |
-| `soul` | Soul | **KEY room_05** | soul_essence + elixir |
+### `room_02` - Wet Room
 
-#### Complete Recipe Table
+| Input A | Input B | Result |
+|---|---|---|
+| water | saltpeter | acid |
+| water | berries | must |
+| air | saltpeter | explosion |
+| water | clay | dust |
+| water | vitriol | poison |
+| water | lime | gypsum |
+| iron | vitriol | copper |
 
-**room_01 (Forge — workbench/anvil/furnace):**
-| Input A | Input B | Result | Note |
-|---|---|---|---|
-| iron | flint | firesteel | keep |
-| firesteel | coal | fire | keep |
-| fire | wood | torch | keep (needed for room_02) |
-| clay | iron | ore | keep |
-| ore | fire | copper | new |
-| copper | wood | mechanism | new (forge assembly) |
-| clay | wood | paper | new |
-| air | clay | dust | keep |
+`explosion` triggers game over when crafted.
 
-**room_02 (Wet Room — boiler, activate with torch):**
-| Input A | Input B | Result | Note |
-|---|---|---|---|
-| water | saltpeter | acid | keep |
-| water | berries | must | keep |
-| air | saltpeter | explosion | GAME OVER, keep |
-| water | clay | dust | keep |
-| water | vitriol | poison | keep |
-| water | lime | gypsum | keep |
-| iron | vitriol | copper | keep (existing recipe) |
+### `room_03` - Pantry
 
-**room_03 (Pantry — master workbench):**
-| Input A | Input B | Result | Note |
-|---|---|---|---|
-| fire | water | alcohol | keep |
-| alcohol | herbs | tincture | keep |
-| alcohol | horn | tincture | keep |
-| must | horn | wine | keep |
-| water | herbs | elixir | keep |
-| water | horn | glue | keep |
-| air | herbs | dust | keep |
-| clay | iron | mechanism | alternate (clay mold + iron fittings) |
-| copper | blank_scroll | mechanism | alternate (schematic-guided assembly) |
-| paper | wood | blank_scroll | new |
-| mechanism | blank_scroll | ancient_scroll | KEY room_04 |
-| acid | gypsum | base_stone | new |
-| base_stone | elixir | philosopher_stone | KEY room_04 |
-| torch | copper | magic_wand | KEY room_04 |
-| mechanism | air | vessel | new |
-| vessel | fire | spirit | KEY room_05 |
-| tincture | wine | soul_essence | new |
-| soul_essence | elixir | soul | KEY room_05 |
-| wine | herbs | mind | KEY room_05 |
-| clay | copper | body | KEY room_05 |
+| Input A | Input B | Result |
+|---|---|---|
+| fire | water | alcohol |
+| alcohol | herbs | tincture |
+| alcohol | horn | tincture |
+| must | horn | wine |
+| water | herbs | elixir |
+| water | horn | glue |
+| air | herbs | dust |
+| clay | iron | mechanism |
+| copper | blank_scroll | mechanism |
+| paper | wood | blank_scroll |
+| mechanism | blank_scroll | ancient_scroll |
+| acid | gypsum | base_stone |
+| base_stone | elixir | philosopher_stone |
+| torch | copper | magic_wand |
+| mechanism | air | vessel |
+| vessel | fire | spirit |
+| tincture | wine | soul_essence |
+| soul_essence | elixir | soul |
+| wine | herbs | mind |
+| clay | copper | body |
 
-#### Complex Artifact Paths
+## Key Artifact Paths
 
-**For room_04 (3 artifacts):**
-1. `ancient_scroll`: clay+wood=paper → paper+wood=blank_scroll → clay+iron=ore → ore+fire=copper → copper+wood=mechanism → mechanism+blank_scroll=**ancient_scroll** (6 steps)
-2. `philosopher_stone`: water+saltpeter=acid → water+lime=gypsum → acid+gypsum=base_stone → water+herbs=elixir → base_stone+elixir=**philosopher_stone** (5 steps)
-3. `magic_wand`: iron+flint=firesteel → firesteel+coal=fire → fire+wood=torch → clay+iron=ore → ore+fire=copper → torch+copper=**magic_wand** (6 steps)
+### Room 04 Artifacts
 
-**For room_05 (4 elements):**
-1. `spirit`: clay+iron=ore → ore+fire=copper → copper+wood=mechanism → mechanism+air=vessel → vessel+fire=**spirit** (5 steps)
-2. `mind`: water+berries=must → must+horn=wine → fire+water=alcohol → alcohol+herbs=tincture → tincture+wine=**mind** (5 steps)
-3. `body`: clay+iron=ore → ore+fire=copper → clay+copper=**body** (3 steps)
-4. `soul`: fire+water=alcohol → alcohol+herbs=tincture → water+berries=must → must+horn=wine → tincture+wine=soul_essence → soul_essence+elixir=**soul** (6 steps)
+1. `ancient_scroll`: clay+wood=paper, paper+wood=blank_scroll, clay+iron=ore, ore+fire=copper, copper+wood=mechanism, mechanism+blank_scroll=ancient_scroll.
+2. `philosopher_stone`: water+saltpeter=acid, water+lime=gypsum, acid+gypsum=base_stone, water+herbs=elixir, base_stone+elixir=philosopher_stone.
+3. `magic_wand`: iron+flint=firesteel, firesteel+coal=fire, fire+wood=torch, clay+iron=ore, ore+fire=copper, torch+copper=magic_wand.
+
+### Room 05 Finale Elements
+
+1. `spirit`: clay+iron=ore, ore+fire=copper, copper+wood=mechanism, mechanism+air=vessel, vessel+fire=spirit.
+2. `mind`: water+berries=must, must+horn=wine, fire+water=alcohol, alcohol+herbs=tincture, tincture+wine=mind.
+3. `body`: clay+iron=ore, ore+fire=copper, clay+copper=body.
+4. `soul`: fire+water=alcohol, alcohol+herbs=tincture, water+berries=must, must+horn=wine, tincture+wine=soul_essence, soul_essence+elixir=soul.
 
 ## Game Over
 
-Triggered by crafting **Explosion** (Air + Saltpeter in room_02). The screen displays "GAME OVER" with a restart button. `Time.timeScale = 0` freezes all gameplay.
-
-## Key Progression Hooks
-
-- **Torch** → activates locked craft tables (e.g., boiler in room_02)
-- **Doors** → require specific elements to pass through (consumed on use)
-- **Offering Table (room_04)** → place 3 key artifacts (ancient_scroll, philosopher_stone, magic_wand); `OnCompleted()` unlocks room_05
-- **Offering Tables (room_05)** → place 1 key element on each of 4 tables (spirit, mind, body, soul) → game finale
-- **Room transitions** → linear progression: room_01 → room_02 → room_03 → room_04 → room_05
+Crafting `explosion` in `room_02` triggers `GameOverController`. The overlay shows a restart button and pauses gameplay with `Time.timeScale = 0`.
 
 ## UI
 
-All UI is **programmatically generated** (no prefabs for screens):
-- `UIFactory.CreateText()` / `UIFactory.CreateButton()`
-- Inventory bar at screen bottom
-- Crafting panel is a dynamic overlay with draggable items
-- Game over overlay with title, message, restart button
+The main UI is generated at runtime:
+
+- `InventoryUI` creates the bottom inventory bar.
+- `InventorySlotUI` handles inventory drag/drop.
+- `CraftingPanelUI` creates the craft table overlay.
+- `TableDropArea` accepts dragged elements.
+- `TableItemUI` handles table items and pair crafting.
+- `InteractionHintWindow` shows temporary hint popups.
+
+`InventoryUI` and `CraftingPanelUI` expose Inspector fields for future visual polish: panel sprites, colors, slot sizes, icon sizes, and text sizes. `ElementDefinition` can also define a personal UI background that follows that element in inventory, craft table UI, and drag previews. If no personal background is configured, craft table items use the panel-level `Table Item Background Mode` fallback.
 
 ## Audio
 
-- `AmbientMusicSwitcher` — trigger-based zone music. Player enters a collider zone, music crossfades.
-- Each room has its own background music source.
+- `AmbientMusicSwitcher` handles room/zone background music.
+- Interaction SFX go through `GameAudio.Play(GameSoundId.X)`.
+- `GameAudio` uses generated fallback clips by default.
+- `GameAudioProfile` can override any individual `GameSoundId` with a real `AudioClip`.
 
 ## Architecture Notes
 
-- **No DI framework** — `SceneInstaller` manually wires references on `Start()`
-- **Singletons** — `Inventory`, `CraftingSystem`, `GameOverController` accessed via static `Instance`
-- **ScriptableObjects** for data: `ElementDefinition` (elements), `CraftRecipeDatabase` (recipes)
-- **No tests, no CI** — verify by playing in Unity Editor
-- **Unity Input System** package installed but gameplay uses legacy `Input.GetKey` API
-
-## Adding Content
-
-### New Element
-1. Right-click in Project: `Create > Golem Craft/Element Definition`
-2. Set: id (auto-lowercased), display name, icon (sprite), world prefab (optional)
-3. Set `discardOnTableClose = true` if element should vanish when crafting panel closes (like clay)
-
-### New Recipe
-1. Select `MainCraftRecipeDatabase` in `Assets/Game/Crafting/`
-2. Add entry in Inspector: Room ID, Input A, Input B, Result
-3. Recipe is available immediately on play
-
-### New Room
-1. Add room layout to the main scene (position along Z-axis)
-2. Create `RoomCameraController` with camera points
-3. Add `RoomTransitionTrigger` colliders at entry/exit points
-4. Register table in `SceneInstaller`'s `craftTables` array
-
-### New Interactable
-1. Implement `IInteractable` interface (requires `InteractionPrompt` getter and `Interact()` method)
-2. Attach to a GameObject with a Collider
-3. Player presses E → `PlayerInteractor` raycast/overlap finds it → calls `Interact()`
+- `SceneInstaller` wires scene references on `Start()`.
+- Static singleton-style access is used by `Inventory`, `CraftingSystem`, `GameOverController`, and `GameAudio`.
+- ScriptableObjects hold data: `ElementDefinition`, `CraftRecipeDatabase`, `GameAudioProfile`.
+- There are no automated gameplay tests. Verify in Unity Editor Play Mode.
+- Unity Input System is installed, but gameplay currently uses legacy `Input`.

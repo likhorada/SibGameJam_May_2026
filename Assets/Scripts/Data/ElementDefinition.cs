@@ -17,6 +17,11 @@ public sealed class ElementDefinition : ScriptableObject
     [SerializeField] private Sprite icon;
     [SerializeField] private Color fallbackColor = Color.gray;
 
+    [Header("UI Background")]
+    [SerializeField] private ElementUIBackgroundMode uiBackgroundMode = ElementUIBackgroundMode.None;
+    [SerializeField] private UIImageStyle uiBackgroundStyle =
+        UIImageStyle.Create(Color.white, false);
+
     [Header("World Visual")]
     [SerializeField] private GameObject worldPrefab;
     [SerializeField] private Vector3 worldScale = Vector3.one;
@@ -42,6 +47,16 @@ public sealed class ElementDefinition : ScriptableObject
     public Color FallbackColor
     {
         get { return fallbackColor; }
+    }
+
+    public ElementUIBackgroundMode UiBackgroundMode
+    {
+        get { return uiBackgroundMode; }
+    }
+
+    public UIImageStyle UiBackgroundStyle
+    {
+        get { return uiBackgroundStyle; }
     }
 
     public GameObject WorldPrefab

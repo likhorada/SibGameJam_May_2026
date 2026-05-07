@@ -15,6 +15,11 @@ public sealed class SceneInstaller : MonoBehaviour
     [Header("Core Elements")]
     [SerializeField] private ElementDefinition clayElement;
 
+    [Header("Audio")]
+    [SerializeField] private GameAudioProfile gameAudioProfile;
+    [SerializeField] private AudioSource gameAudioSource;
+    [SerializeField, Range(0f, 1f)] private float gameAudioVolume = 1f;
+
     [Header("UI")]
     [SerializeField] private Canvas rootCanvas;
     [SerializeField] private InventoryUI inventoryUI;
@@ -73,11 +78,20 @@ public sealed class SceneInstaller : MonoBehaviour
 
         inventory.Initialize();
         craftingSystem.Configure(recipeDatabase);
+        InstallAudio();
         inventoryUI.Configure(rootCanvas, clayElement);
 
         InstallCraftTables();
 
         Debug.Log("SceneInstaller: scene installed successfully");
+    }
+
+    private void InstallAudio()
+    {
+        if (gameAudioProfile == null && gameAudioSource == null)
+            return;
+
+        GameAudio.Configure(gameAudioSource, gameAudioProfile, gameAudioVolume);
     }
 
     private void InstallCraftTables()

@@ -54,6 +54,7 @@ public sealed class TableDropArea : MonoBehaviour, IDropHandler
             );
 
             DragContext.MarkHandled();
+            GameAudio.Play(GameSoundId.UiDrop);
             return;
         }
 
@@ -68,6 +69,7 @@ public sealed class TableDropArea : MonoBehaviour, IDropHandler
             );
 
             DragContext.MarkHandled();
+            GameAudio.Play(GameSoundId.UiDrop);
             return;
         }
 
@@ -80,6 +82,7 @@ public sealed class TableDropArea : MonoBehaviour, IDropHandler
 
             tableItem.AttachToTable(localPoint);
             DragContext.MarkHandled();
+            GameAudio.Play(GameSoundId.UiDrop);
         }
     }
 

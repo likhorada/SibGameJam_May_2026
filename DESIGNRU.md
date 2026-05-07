@@ -1,227 +1,187 @@
-# DESIGN.md — Golem Craft (Дизайн-документ)
+# DESIGNRU.md - Golem Craft
 
-## Общее описание
+## Обзор
 
-**SibGameJam_May_2026** — 3D-игра про исследование комнат и крафт, сделанная для game jam.
-Игрок управляет големом из глины, исследует interconnected комнаты, собирает алхимические элементы и комбинирует их на столах крафта для создания новых веществ.
+`SibGameJam_May_2026` - 3D-игра про исследование комнат и крафт алхимических элементов. Игрок управляет глиняным големом, собирает элементы, соединяет их парами на столах крафта и использует результаты для открытия комнат, активации столов и финальных подношений.
 
 ## Основной цикл
 
-1. **Исследуй** комнаты через переходы
-2. **Собирай** базовые элементы из бесконечных источников (клавиша **E**)
-3. **Крафть** на столах, перетаскивая элементы друг на друга
-4. **Используй** созданные элементы для открытия дверей, активации столов или выполнения подношений
-5. **Повторяй** в progressively более сложных комнатах
+1. Исследовать связанные комнаты.
+2. Собирать базовые элементы из бесконечных источников клавишей `E`.
+3. Открывать стол крафта и перетаскивать два элемента друг на друга.
+4. Использовать созданные элементы для активации, открытия проходов или подношений.
+5. Возвращаться к прежним комнатам за нужными ингредиентами.
 
 ## Управление
 
 | Ввод | Действие |
 |---|---|
-| WASD / Стрелки | Перемещение (относительно камеры) |
-| E | Взаимодействие (raycast 2.4м, сфера-фоллбэк 1.8м) |
+| WASD / стрелки | Движение относительно камеры |
+| E | Взаимодействие: raycast 2.4 м, затем fallback-сфера 1.8 м |
 | Escape | Закрыть панель крафта |
 
-## Игрок
+## Игрок и инвентарь
 
-- Перемещение через `Rigidbody` (физика, без телепортации)
-- Камера всегда — активная камера с наибольшим depth; движение выравнивается по ней
-- **4 слота инвентаря** для обычных предметов
-- **1 постоянный слот глины** — глина всегда доступна, показывается в UI, но не хранится в инвентаре
+- Движение работает через `Rigidbody`.
+- Направление движения берется относительно активной камеры с наибольшим `depth`.
+- В инвентаре 4 обычных слота.
+- Глина всегда доступна через отдельный UI-слот. Она не хранится в массиве `Inventory` и не занимает обычный слот.
 
 ## Комнаты
 
-| Комната | ID | Описание | Тип стола |
-|---|---|---|---|
-| Уровень 1 (стартовая) | `room_01` | Кузница (верстак/наковальня/печь). Базовые материалы: железо, кремень, уголь, дерево, воздух | Craft Table |
-| Уровень 2 | `room_02` | Мокрая комната (котёл). Водная химия: вода, селитра, известь, купорос. Требуется **факел** для активации. | Craft Table |
-| Уровень 3 | `room_03` | Кладовая (мастерской верстак). Органика/ферментация: травы, ягоды, рог. Дрожжи доступны из room_04 для крафта здесь. | Craft Table |
-| Уровень 4 | `room_04` | Кабинет алхимика. Стол подношений для 3 ключевых артефактов, открывающих room_05. Элементы: киноварь, сундук, дрожжи. | **Offering Table (×1)** |
-| Уровень 5 | `room_05` | Магическая комната. 4 отдельных стола подношений — по 1 ключевому элементу на каждый для финала. | **4 separate Offering Tables** |
+| Комната | ID | Описание | Стол | Источники |
+|---|---|---|---|---|
+| Уровень 1 | `room_01` | Кузница: верстак, наковальня, печь | Стол крафта | iron, flint, coal, wood, air |
+| Уровень 2 | `room_02` | Влажная комната: котел, активируется факелом | Стол крафта | water, saltpeter, lime, vitriol |
+| Уровень 3 | `room_03` | Кладовая: главный верстак, органика | Стол крафта | herbs, berries, horn |
+| Уровень 4 | `room_04` | Кабинет алхимика, открывает финал | 1 стол подношений | cinnabar, chest, yeast |
+| Уровень 5 | `room_05` | Магическая комната, финал | 4 стола подношений | нет |
 
-Комнаты расположены вдоль оси Z в одной сцене (`Room_v3.unity`), соединены коллайдерами `RoomTransitionTrigger`, которые телепортируют игрока и плавно или мгновенно переключают камеру.
+Все комнаты находятся в одной сцене `Assets/Scenes/Room_v3.unity` и соединены триггерами `RoomTransitionTrigger`.
 
-## Типы интерактивных объектов
+## Интерактивные объекты
 
 | Тип | Поведение |
 |---|---|
-| **Источник элемента** | Бесконечный pickup — нажми E, чтобы добавить элемент в инвентарь |
-| **Стол крафта** | Открывает UI крафта; может требовать элемент активации (например, факел для котла) |
-| **Дверь** | Расходует требуемый элемент из инвентаря для открытия, затем исчезает |
-| **Стол подношений** | Принимает конкретные предметы по одному, показывает 3D-визуал, затем вызывает события завершения для анимации и открытия проходов |
-| **Мусорка** | Очищает все 4 слота инвентаря (слот глины не затрагивается) |
+| Источник элемента | Бесконечный pickup. Добавляет элемент в первый свободный слот. |
+| Стол крафта | Открывает UI крафта или сначала требует элемент активации. |
+| Дверь | Расходует нужный элемент, отключает блокирующий collider и скрывается/открывается. |
+| Стол подношений | Принимает конкретные элементы по одному, создает 3D-визуалы и вызывает completion events. |
+| Мусорка | Очищает 4 обычных слота инвентаря. Глина не затрагивается. |
+| Подсказка | Необязательный `InteractionHintOnInteract`, показывает текст после взаимодействия. Может использовать правила по состоянию интерактивного объекта. |
 
 ## Система крафта
 
-- **Элементы всегда складываются парами** — каждый рецепт требует ровно 2 входа и даёт 1 результат
-- Рецепты **привязаны к комнате** — одни и те же два элемента могут давать разный результат в разных комнатах
-- **Перенос элементов между комнатами** — игрок может подобрать элементы в одной комнате и использовать их за столом крафта в другой (например, источник дрожжей в room_04, но они используются в рецептах на столе room_03)
-- **Порядок ввода не важен** — `CraftKey` нормализует элементы по алфавиту
-- Крафт происходит в **UI-оверлее**: элементы перетаскиваются на стол, затем один элемент на другой
-- При закрытии панели крафта обычные предметы возвращаются в инвентарь; элементы с флагом `discardOnTableClose` уничтожаются
+- Каждый рецепт состоит ровно из 2 входов и 1 результата.
+- Рецепты привязаны к `roomId`.
+- Порядок входов не важен: `CraftKey` сортирует id элементов.
+- Элементы можно переносить между комнатами.
+- В UI крафта можно перетаскивать элементы из обычных слотов, постоянного слота глины и со стола.
+- При закрытии панели обычные элементы со стола возвращаются в инвентарь, если хватает места.
+- Элементы с `discardOnTableClose` исчезают при закрытии панели.
 
-## Элементы
+## Базовые элементы
 
-### Базовые элементы (источники для pickup)
-
-| Элемент | Комнаты | Примечание |
+| Элемент | Где находится | Примечание |
 |---|---|---|
-| **Глина** | Всегда доступна | Постоянный слот — всегда в инвентаре, не расходуется |
-| **Железо** | room_01 | Базовый металл |
-| **Кремень** | room_01 | Огнивный камень |
-| **Уголь** | room_01 | Топливо |
-| **Дерево** | room_01 | Базовый материал |
-| **Воздух** | room_01 | Универсальный реагент |
-| **Вода** | room_02 | Универсальный растворитель |
-| **Селитра** | room_02 | Реактивный минерал |
-| **Известь** | room_02 | Строительный материал |
-| **Купорос** | room_02 | Кислотный минерал |
-| **Травы** | room_03 | Лекарственное растение |
-| **Ягоды** | room_03 | Органика |
-| **Рог** | room_03 | Животный материал |
-| **Дрожжи** | room_04 | Агент ферментации |
-| **Киноварь** | room_04 | Красный минерал |
-| **Сундук** | room_04 | Загадочный элемент |
+| clay | всегда | Постоянный UI-слот |
+| iron | `room_01` | Базовый металл |
+| flint | `room_01` | Камень для искры |
+| coal | `room_01` | Топливо |
+| wood | `room_01` | Базовый материал |
+| air | `room_01` | Универсальный реагент |
+| water | `room_02` | Растворитель |
+| saltpeter | `room_02` | Реактивный минерал |
+| lime | `room_02` | Строительный материал |
+| vitriol | `room_02` | Кислый минерал |
+| herbs | `room_03` | Травы |
+| berries | `room_03` | Органика |
+| horn | `room_03` | Органический материал |
+| yeast | `room_04` | Ферментация |
+| cinnabar | `room_04` | Красный минерал |
+| chest | `room_04` | Загадочный элемент |
 
-### 3D-визуалы элементов
+## 3D-визуалы элементов
 
-У каждого `ElementDefinition` есть сгенерированный или импортированный `worldPrefab`. Базовые модели лежат в `Assets/Game/Prefabs/ElementWorldModels/` и используют `ElementWorldModel`, который на runtime собирает узнаваемые low-poly формы из Unity primitives. Если в level FBX есть подходящий текстурированный проп, элемент может ссылаться на wrapper-prefab в `Assets/Game/Art/Models/`, который показывает только нужный дочерний mesh из FBX.
+`ElementDefinition.worldPrefab` задает модель, которую столы подношений показывают в мире. Базовые runtime-модели лежат в `Assets/Game/Prefabs/ElementWorldModels/`. Импортированные wrapper-prefab'ы лежат в `Assets/Game/Art/Models/` и могут показывать выбранный дочерний mesh из FBX уровня.
 
-### Создаваемые элементы (рецепты)
+## Таблица рецептов
 
-Рецепты находятся в `MainCraftRecipeDatabase` в `Assets/Game/Crafting/`. Каждая комната содержит несколько рецептов, комбинирующих два входных элемента в один результат. Смотрите ассет базы данных для полного списка.
+### `room_01` - кузница
 
-#### Новые элементы (предложение)
+| Вход A | Вход B | Результат |
+|---|---|---|
+| iron | flint | firesteel |
+| firesteel | coal | fire |
+| fire | wood | torch |
+| clay | iron | ore |
+| ore | fire | copper |
+| copper | wood | mechanism |
+| clay | wood | paper |
+| air | clay | dust |
 
-| ID | Название | Тип | Назначение |
-|---|---|---|---|
-| `paper` | Бумага | промежуточный | clay + wood |
-| `mechanism` | Механизм | промежуточный | основной путь: copper + wood в room_01; альтернативная сборка по схеме в room_03 |
-| `blank_scroll` | Пустой свиток | промежуточный | paper + wood |
-| `ancient_scroll` | Древний свиток | **КЛЮЧ room_04** | mechanism + blank_scroll |
-| `base_stone` | Основа камня | промежуточный | acid + gypsum |
-| `philosopher_stone` | Философский камень | **КЛЮЧ room_04** | base_stone + elixir |
-| `magic_wand` | Магический жезл | **КЛЮЧ room_04** | torch + copper |
-| `vessel` | Сосуд | промежуточный | mechanism + air |
-| `spirit` | Дух | **КЛЮЧ room_05** | vessel + fire |
-| `mind` | Разум | **КЛЮЧ room_05** | tincture + wine |
-| `body` | Тело | **КЛЮЧ room_05** | clay + copper |
-| `soul_essence` | Сущность души | промежуточный | tincture + wine |
-| `soul` | Душа | **КЛЮЧ room_05** | soul_essence + elixir |
+### `room_02` - влажная комната
 
-#### Полная таблица рецептов
+| Вход A | Вход B | Результат |
+|---|---|---|
+| water | saltpeter | acid |
+| water | berries | must |
+| air | saltpeter | explosion |
+| water | clay | dust |
+| water | vitriol | poison |
+| water | lime | gypsum |
+| iron | vitriol | copper |
 
-**room_01 (Кузница — верстак/наковальня/печь):**
-| Вход A | Вход B | Результат | Примечание |
-|---|---|---|---|
-| iron | flint | firesteel | сохранить |
-| firesteel | coal | fire | сохранить |
-| fire | wood | torch | сохранить (нужен для room_02) |
-| clay | iron | ore | сохранить |
-| ore | fire | copper | новый |
-| copper | wood | mechanism | новый (кузнечная сборка) |
-| clay | wood | paper | новый |
-| air | clay | dust | сохранить |
+`explosion` запускает game over.
 
-**room_02 (Мокрая комната — котёл, активация torch):**
-| Вход A | Вход B | Результат | Примечание |
-|---|---|---|---|
-| water | saltpeter | acid | сохранить |
-| water | berries | must | сохранить |
-| air | saltpeter | explosion | GAME OVER, сохранить |
-| water | clay | dust | сохранить |
-| water | vitriol | poison | сохранить |
-| water | lime | gypsum | сохранить |
-| iron | vitriol | copper | сохранить (существующий рецепт) |
+### `room_03` - кладовая
 
-**room_03 (Кладовая — мастерской верстак):**
-| Вход A | Вход B | Результат | Примечание |
-|---|---|---|---|
-| fire | water | alcohol | сохранить |
-| alcohol | herbs | tincture | сохранить |
-| alcohol | horn | tincture | сохранить |
-| must | horn | wine | сохранить |
-| water | herbs | elixir | сохранить |
-| water | horn | glue | сохранить |
-| air | herbs | dust | сохранить |
-| clay | iron | mechanism | альтернатива (глиняная форма + железная фурнитура) |
-| copper | blank_scroll | mechanism | альтернатива (сборка по схеме) |
-| paper | wood | blank_scroll | новый |
-| mechanism | blank_scroll | ancient_scroll | КЛЮЧ room_04 |
-| acid | gypsum | base_stone | новый |
-| base_stone | elixir | philosopher_stone | КЛЮЧ room_04 |
-| torch | copper | magic_wand | КЛЮЧ room_04 |
-| mechanism | air | vessel | новый |
-| vessel | fire | spirit | КЛЮЧ room_05 |
-| tincture | wine | soul_essence | новый |
-| soul_essence | elixir | soul | КЛЮЧ room_05 |
-| wine | herbs | mind | КЛЮЧ room_05 |
-| clay | copper | body | КЛЮЧ room_05 |
+| Вход A | Вход B | Результат |
+|---|---|---|
+| fire | water | alcohol |
+| alcohol | herbs | tincture |
+| alcohol | horn | tincture |
+| must | horn | wine |
+| water | herbs | elixir |
+| water | horn | glue |
+| air | herbs | dust |
+| clay | iron | mechanism |
+| copper | blank_scroll | mechanism |
+| paper | wood | blank_scroll |
+| mechanism | blank_scroll | ancient_scroll |
+| acid | gypsum | base_stone |
+| base_stone | elixir | philosopher_stone |
+| torch | copper | magic_wand |
+| mechanism | air | vessel |
+| vessel | fire | spirit |
+| tincture | wine | soul_essence |
+| soul_essence | elixir | soul |
+| wine | herbs | mind |
+| clay | copper | body |
 
-#### Комплексные пути создания артефактов
+## Пути ключевых артефактов
 
-**Для room_04 (3 артефакта):**
-1. `ancient_scroll`: clay+wood=paper → paper+wood=blank_scroll → clay+iron=ore → ore+fire=copper → copper+wood=mechanism → mechanism+blank_scroll=**ancient_scroll** (6 шагов)
-2. `philosopher_stone`: water+saltpeter=acid → water+lime=gypsum → acid+gypsum=base_stone → water+herbs=elixir → base_stone+elixir=**philosopher_stone** (5 шагов)
-3. `magic_wand`: iron+flint=firesteel → firesteel+coal=fire → fire+wood=torch → clay+iron=ore → ore+fire=copper → torch+copper=**magic_wand** (6 шагов)
+### Артефакты для `room_04`
 
-**Для room_05 (4 элемента):**
-1. `spirit`: clay+iron=ore → ore+fire=copper → copper+wood=mechanism → mechanism+air=vessel → vessel+fire=**spirit** (5 шагов)
-2. `mind`: water+berries=must → must+horn=wine → fire+water=alcohol → alcohol+herbs=tincture → tincture+wine=**mind** (5 шагов)
-3. `body`: clay+iron=ore → ore+fire=copper → clay+copper=**body** (3 шага)
-4. `soul`: fire+water=alcohol → alcohol+herbs=tincture → water+berries=must → must+horn=wine → tincture+wine=soul_essence → soul_essence+elixir=**soul** (6 шагов)
+1. `ancient_scroll`: clay+wood=paper, paper+wood=blank_scroll, clay+iron=ore, ore+fire=copper, copper+wood=mechanism, mechanism+blank_scroll=ancient_scroll.
+2. `philosopher_stone`: water+saltpeter=acid, water+lime=gypsum, acid+gypsum=base_stone, water+herbs=elixir, base_stone+elixir=philosopher_stone.
+3. `magic_wand`: iron+flint=firesteel, firesteel+coal=fire, fire+wood=torch, clay+iron=ore, ore+fire=copper, torch+copper=magic_wand.
+
+### Элементы финала для `room_05`
+
+1. `spirit`: clay+iron=ore, ore+fire=copper, copper+wood=mechanism, mechanism+air=vessel, vessel+fire=spirit.
+2. `mind`: water+berries=must, must+horn=wine, fire+water=alcohol, alcohol+herbs=tincture, tincture+wine=mind.
+3. `body`: clay+iron=ore, ore+fire=copper, clay+copper=body.
+4. `soul`: fire+water=alcohol, alcohol+herbs=tincture, water+berries=must, must+horn=wine, tincture+wine=soul_essence, soul_essence+elixir=soul.
 
 ## Game Over
 
-Срабатывает при создании **Взрыва** (Воздух + Селитра в room_02). На экране появляется «GAME OVER» с кнопкой рестарта. `Time.timeScale = 0` замораживает геймплей.
-
-## Ключевые точки прогрессии
-
-- **Факел** → активирует заблокированные столы крафта (например, котёл в room_02)
-- **Двери** → требуют конкретный элемент для прохода (расходуется при использовании)
-- **Стол подношений (room_04)** → 3 ключевых артефакта (ancient_scroll, philosopher_stone, magic_wand); `OnCompleted()` открывает room_05
-- **Столы подношений (room_05)** → по 1 ключевому элементу на каждый из 4 столов (spirit, mind, body, soul) → финал игры
-- **Переходы между комнатами** → линейная прогрессия: room_01 → room_02 → room_03 → room_04 → room_05
+Создание `explosion` в `room_02` запускает `GameOverController`. На экране появляется overlay с кнопкой рестарта, а геймплей ставится на паузу через `Time.timeScale = 0`.
 
 ## UI
 
-Весь UI **генерируется программно** (нет префабов для экранов):
-- `UIFactory.CreateText()` / `UIFactory.CreateButton()`
-- Панель инвентаря внизу экрана
-- Панель крафта — динамический оверлей с перетаскиваемыми предметами
-- Game over оверлей с заголовком, сообщением, кнопкой рестарта
+Основной UI генерируется во время игры:
+
+- `InventoryUI` строит нижнюю панель инвентаря.
+- `InventorySlotUI` отвечает за drag/drop слотов.
+- `CraftingPanelUI` строит overlay стола крафта.
+- `TableDropArea` принимает перетаскиваемые элементы.
+- `TableItemUI` отвечает за предметы на столе и крафт пары.
+- `InteractionHintWindow` показывает временные текстовые подсказки.
+
+`InventoryUI` и `CraftingPanelUI` имеют поля Inspector для будущей настройки визуала: спрайты панелей, цвета, размеры слотов, размеры иконок и размеры текста. `ElementDefinition` также может задавать личный UI-фон элемента, который будет виден в инвентаре, на столе крафта и в drag-preview. Если личный фон не настроен, элементы на столе используют fallback панели через `Table Item Background Mode`.
 
 ## Аудио
 
-- `AmbientMusicSwitcher` — зональная музыка по триггеру. Игрок входит в коллайдер-зону, музыка переключается.
-- Каждая комната имеет свой источник фоновой музыки.
+- `AmbientMusicSwitcher` переключает фоновую музыку по комнатам/зонам.
+- Звуки взаимодействий идут через `GameAudio.Play(GameSoundId.X)`.
+- `GameAudio` по умолчанию использует сгенерированные fallback-звуки.
+- `GameAudioProfile` может заменить любой `GameSoundId` настоящим `AudioClip`.
 
-## Заметки по архитектуре
+## Архитектура
 
-- **Нет DI-фреймворка** — `SceneInstaller` вручную связывает ссылки на `Start()`
-- **Синглтоны** — `Inventory`, `CraftingSystem`, `GameOverController` доступны через статический `Instance`
-- **ScriptableObjects** для данных: `ElementDefinition` (элементы), `CraftRecipeDatabase` (рецепты)
-- **Нет тестов, нет CI** — проверяй изменения, запуская в Unity Editor
-- **Unity Input System** пакет установлен, но геймплей использует legacy `Input.GetKey` API
-
-## Добавление контента
-
-### Новый элемент
-1. Правый клик в Project: `Create > Golem Craft/Element Definition`
-2. Заполни: id (автоматически lowercased), отображаемое имя, иконка (sprite), world prefab (опционально)
-3. Установи `discardOnTableClose = true`, если элемент должен исчезать при закрытии стола крафта (как глина)
-
-### Новый рецепт
-1. Выбери `MainCraftRecipeDatabase` в `Assets/Game/Crafting/`
-2. Добавь запись в Inspector: ID комнаты, Вход A, Вход B, Результат
-3. Рецепт доступен сразу при запуске
-
-### Новая комната
-1. Добавь раскладку комнаты в главную сцену (позиция вдоль оси Z)
-2. Создай `RoomCameraController` с точками камеры
-3. Добавь коллайдеры `RoomTransitionTrigger` на входах/выходах
-4. Зарегистрируй стол в массиве `craftTables` компонента `SceneInstaller`
-
-### Новый интерактивный объект
-1. Реализуй интерфейс `IInteractable` (нужны геттер `InteractionPrompt` и метод `Interact()`)
-2. Прикрепи к GameObject с Collider
-3. Игрок нажимает E → `PlayerInteractor` находит объект через raycast/overlap → вызывает `Interact()`
+- `SceneInstaller` связывает ссылки сцены на `Start()`.
+- Статическое singleton-состояние используется в `Inventory`, `CraftingSystem`, `GameOverController` и `GameAudio`.
+- Данные лежат в ScriptableObject: `ElementDefinition`, `CraftRecipeDatabase`, `GameAudioProfile`.
+- Автоматических gameplay-тестов нет. Проверка проводится в Unity Editor Play Mode.
+- Пакет Unity Input System установлен, но gameplay пока использует legacy `Input`.

@@ -5,7 +5,7 @@ using UnityEngine;
 /// Может быть активным сразу или требовать элемент для активации.
 /// Пример: котёл во второй комнате требует факел.
 /// </summary>
-public sealed class CraftTableInteractable : MonoBehaviour, IInteractable
+public sealed class CraftTableInteractable : MonoBehaviour, IInteractable, IInteractionHintStateProvider
 {
     [Header("Table")]
     [SerializeField] private string tableId = "table_01";
@@ -37,6 +37,21 @@ public sealed class CraftTableInteractable : MonoBehaviour, IInteractable
     public bool IsActive
     {
         get { return active; }
+    }
+
+    public ElementDefinition RequiredActivationElement
+    {
+        get { return requiredActivationElement; }
+    }
+
+    public bool IsHintStateActive
+    {
+        get { return active; }
+    }
+
+    public ElementDefinition RequiredHintElement
+    {
+        get { return requiredActivationElement; }
     }
 
     public string InteractionPrompt
@@ -89,18 +104,19 @@ public sealed class CraftTableInteractable : MonoBehaviour, IInteractable
         craftingPanel.Open(tableId, roomId);
     }
 
-    private void TryActivate()
+    private bool TryActivate()
     {
         if (requiredActivationElement == null)
         {
             Debug.Log("Craft table is inactive and has no activation element configured");
-            return;
+            GameAudio.Play(GameSoundId.CraftFail);
+            return false;
         }
 
         if (Inventory.Instance == null)
         {
             Debug.LogError("CraftTableInteractable: Inventory instance not found");
-            return;
+            return false;
         }
 
         bool hasElement = Inventory.Instance.HasElement(requiredActivationElement);
@@ -108,7 +124,8 @@ public sealed class CraftTableInteractable : MonoBehaviour, IInteractable
         if (!hasElement)
         {
             Debug.Log("Need " + requiredActivationElement.DisplayName + " to activate " + gameObject.name);
-            return;
+            GameAudio.Play(GameSoundId.Locked);
+            return false;
         }
 
         if (consumeActivationElement)
@@ -118,6 +135,8 @@ public sealed class CraftTableInteractable : MonoBehaviour, IInteractable
         RefreshVisual();
 
         Debug.Log("Craft table activated: " + gameObject.name);
+        GameAudio.Play(GameSoundId.Activate);
+        return true;
     }
 
     private void RefreshVisual()
