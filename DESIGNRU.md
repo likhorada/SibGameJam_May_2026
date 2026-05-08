@@ -167,12 +167,12 @@
 - `CraftingPanelUI` строит overlay стола крафта.
 - `TableDropArea` принимает перетаскиваемые элементы.
 - `TableItemUI` отвечает за предметы на столе и крафт пары.
-- `PauseMenuController` строит Esc-меню паузы runtime-кодом, если в сцене не назначен готовый объект/префаб.
+- `PauseMenuController` строит Esc-меню паузы по настройкам `PF_PauseMenu` или по scene-instance, назначенному в `SceneInstaller`.
 - `InteractionHintWindow` показывает временные текстовые подсказки.
 
-`InventoryUI` и `CraftingPanelUI` имеют поля Inspector для будущей настройки визуала: спрайты панелей, цвета, размеры слотов, размеры иконок и размеры текста. `ElementDefinition` также может задавать личный UI-фон элемента, который будет виден в инвентаре, на столе крафта и в drag-preview. Если личный фон не настроен, элементы на столе используют fallback панели через `Table Item Background Mode`.
+`InventoryUI`, `CraftingPanelUI` и `PauseMenuController` имеют поля Inspector для настройки визуала: спрайты панелей, кнопок и слайдеров, цвета, размеры слотов, размеры иконок и размеры текста. `ElementDefinition` также может задавать личный UI-фон элемента, который будет виден в инвентаре, на столе крафта и в drag-preview. Если личный фон не настроен, элементы на столе используют fallback панели через `Table Item Background Mode`.
 
-В меню паузы есть `Resume`, `Restart`, `Quit` и отдельные ползунки `Music` / `SFX`. `Music` управляет эмбиентом комнат через `AmbientMusicSwitcher`, а `SFX` управляет интерфейсными и игровыми звуками через `GameAudio`.
+Меню паузы использует `Assets/Game/Prefabs/PF_PauseMenu.prefab`. В нем есть `Resume`, `Restart`, `Quit` и отдельные ползунки `Music` / `SFX`. `Music` управляет эмбиентом комнат через `AmbientMusicSwitcher`, а `SFX` управляет интерфейсными и игровыми звуками через `GameAudio`.
 
 ## Аудио
 
@@ -184,7 +184,7 @@
 ## Архитектура
 
 - `SceneInstaller` связывает ссылки сцены на `Start()`.
-- `SceneInstaller.pauseMenuController` можно оставить пустым: на старте `SceneInstaller` найдет или создаст `PauseMenuController` под root Canvas.
+- `SceneInstaller.pauseMenuController` - необязательный override для scene-instance. Если он пустой, `SceneInstaller` ищет меню под root Canvas, затем создает instance из `pauseMenuPrefab`, затем использует простой runtime fallback.
 - Статическое singleton-состояние используется в `Inventory`, `CraftingSystem`, `GameOverController` и `GameAudio`.
 - Данные лежат в ScriptableObject: `ElementDefinition`, `CraftRecipeDatabase`, `GameAudioProfile`.
 - Автоматических gameplay-тестов нет. Проверка проводится в Unity Editor Play Mode.

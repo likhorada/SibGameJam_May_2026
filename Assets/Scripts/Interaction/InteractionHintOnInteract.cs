@@ -109,6 +109,7 @@ public sealed class InteractionHintRule
     [SerializeField, TextArea(2, 5)] private string message = "Hint text";
     [SerializeField] private int maxShowCount = 1;
     [SerializeField] private float duration = 2.5f;
+    [SerializeField] private InteractionHintVisualSettings visualOverride = new InteractionHintVisualSettings();
 
     private int showCount;
 
@@ -120,6 +121,11 @@ public sealed class InteractionHintRule
     public float Duration
     {
         get { return duration; }
+    }
+
+    public InteractionHintVisualSettings VisualOverride
+    {
+        get { return visualOverride; }
     }
 
     public bool CanShow(InteractionHintContext context)
@@ -176,6 +182,51 @@ public sealed class InteractionHintRule
     }
 }
 
+[Serializable]
+public sealed class InteractionHintVisualSettings
+{
+    [SerializeField] private bool overrideWindowSize;
+    [SerializeField] private Vector2 windowSize = new Vector2(420f, 118f);
+    [SerializeField] private bool overrideWindowStyle;
+    [SerializeField] private UIImageStyle windowStyle =
+        UIImageStyle.Create(new Color(0f, 0f, 0f, 0.72f), false);
+    [SerializeField] private bool overrideTextColor;
+    [SerializeField] private Color textColor = Color.white;
+    [SerializeField] private bool overrideFontSize;
+    [SerializeField] private int fontSize = 20;
+    [SerializeField] private bool overrideTextPadding;
+    [SerializeField] private Vector2 textPadding = new Vector2(24f, 16f);
+
+    public bool HasAnyOverride
+    {
+        get
+        {
+            return overrideWindowSize
+                || overrideWindowStyle
+                || overrideTextColor
+                || overrideFontSize
+                || overrideTextPadding;
+        }
+    }
+
+    public InteractionHintVisualOverrides ToOverrides()
+    {
+        return new InteractionHintVisualOverrides
+        {
+            OverrideWindowSize = overrideWindowSize,
+            WindowSize = windowSize,
+            OverrideWindowStyle = overrideWindowStyle,
+            WindowStyle = windowStyle,
+            OverrideTextColor = overrideTextColor,
+            TextColor = textColor,
+            OverrideFontSize = overrideFontSize,
+            FontSize = fontSize,
+            OverrideTextPadding = overrideTextPadding,
+            TextPadding = textPadding
+        };
+    }
+}
+
 [DisallowMultipleComponent]
 public sealed class InteractionHintOnInteract : MonoBehaviour
 {
@@ -195,6 +246,9 @@ public sealed class InteractionHintOnInteract : MonoBehaviour
     [SerializeField] private Transform customWorldAnchor;
     [SerializeField] private Vector3 worldOffset = new Vector3(0f, 1.25f, 0f);
     [SerializeField] private Vector2 screenOffset = new Vector2(0f, 110f);
+
+    [Header("Visual Override")]
+    [SerializeField] private InteractionHintVisualSettings visualOverride = new InteractionHintVisualSettings();
 
     private int showCount;
 
@@ -224,7 +278,7 @@ public sealed class InteractionHintOnInteract : MonoBehaviour
         if (rule != null)
         {
             rule.MarkShown();
-            ShowMessage(interactionTarget, rule.Message, rule.Duration);
+            ShowMessage(interactionTarget, rule.Message, rule.Duration, rule.VisualOverride);
             return;
         }
 
@@ -273,15 +327,20 @@ public sealed class InteractionHintOnInteract : MonoBehaviour
             return;
 
         showCount++;
-        ShowMessage(interactionTarget, message, duration);
+        ShowMessage(interactionTarget, message, duration, visualOverride);
     }
 
     private void ShowMessage(
         Transform interactionTarget,
         string text,
-        float showDuration)
+        float showDuration,
+        InteractionHintVisualSettings ruleVisualOverride)
     {
         Transform target = ResolveTarget(interactionTarget);
+        InteractionHintVisualSettings resolvedVisualOverride =
+            ruleVisualOverride != null && ruleVisualOverride.HasAnyOverride
+                ? ruleVisualOverride
+                : visualOverride;
 
         InteractionHintRequest request = new InteractionHintRequest
         {
@@ -291,7 +350,10 @@ public sealed class InteractionHintOnInteract : MonoBehaviour
             WorldPosition = target != null ? target.position : transform.position,
             WorldOffset = worldOffset,
             ScreenOffset = screenOffset,
-            Duration = showDuration
+            Duration = showDuration,
+            VisualOverrides = resolvedVisualOverride != null
+                ? resolvedVisualOverride.ToOverrides()
+                : default
         };
 
         InteractionHintWindow.Show(request);

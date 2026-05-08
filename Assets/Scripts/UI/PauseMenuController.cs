@@ -15,6 +15,27 @@ public sealed class PauseMenuController : MonoBehaviour
     [SerializeField] private Vector2 buttonSize = new Vector2(260f, 52f);
     [SerializeField] private Vector2 sliderSize = new Vector2(260f, 22f);
 
+    [Header("Visual")]
+    [SerializeField] private UIImageStyle backdropStyle =
+        UIImageStyle.Create(new Color(0.02f, 0.018f, 0.015f, 0.78f), true);
+    [SerializeField] private UIImageStyle panelStyle =
+        UIImageStyle.Create(new Color(0.07f, 0.06f, 0.048f, 0.96f), true);
+    [SerializeField] private UIImageStyle buttonStyle =
+        UIImageStyle.Create(new Color(0.18f, 0.18f, 0.18f, 1f), true);
+    [SerializeField] private UIImageStyle sliderBackgroundStyle =
+        UIImageStyle.Create(new Color(0.15f, 0.14f, 0.12f, 1f), true);
+    [SerializeField] private UIImageStyle sliderFillStyle =
+        UIImageStyle.Create(new Color(0.62f, 0.49f, 0.25f, 1f), true);
+    [SerializeField] private UIImageStyle sliderHandleStyle =
+        UIImageStyle.Create(new Color(0.9f, 0.78f, 0.46f, 1f), true);
+
+    [Header("Text")]
+    [SerializeField] private string titleText = "Paused";
+    [SerializeField] private int titleFontSize = 34;
+    [SerializeField] private int labelFontSize = 18;
+    [SerializeField] private int buttonFontSize = 18;
+    [SerializeField] private Color textColor = Color.white;
+
     [Header("Audio")]
     [SerializeField, Range(0f, 1f)] private float musicVolume = 1f;
     [SerializeField, Range(0f, 1f)] private float sfxVolume = 1f;
@@ -32,12 +53,33 @@ public sealed class PauseMenuController : MonoBehaviour
     public void Configure(Canvas canvas)
     {
         rootCanvas = canvas;
+        ForceRootRect();
 
         if (!isBuilt)
             BuildUI();
 
         SetMenuVisible(false);
         ApplyAudioVolumes();
+    }
+
+    private void ForceRootRect()
+    {
+        if (rootCanvas != null && !transform.IsChildOf(rootCanvas.transform))
+            transform.SetParent(rootCanvas.transform, false);
+
+        RectTransform rectTransform = transform as RectTransform;
+
+        if (rectTransform == null)
+            rectTransform = gameObject.AddComponent<RectTransform>();
+
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchoredPosition = Vector2.zero;
+        rectTransform.sizeDelta = Vector2.zero;
+        rectTransform.offsetMin = Vector2.zero;
+        rectTransform.offsetMax = Vector2.zero;
+        transform.SetAsLastSibling();
     }
 
     private void Awake()
@@ -151,7 +193,7 @@ public sealed class PauseMenuController : MonoBehaviour
         }
 
         overlay = new GameObject("PauseMenuOverlay");
-        overlay.transform.SetParent(rootCanvas.transform, false);
+        overlay.transform.SetParent(transform, false);
         overlay.transform.SetAsLastSibling();
 
         RectTransform overlayRect = overlay.AddComponent<RectTransform>();
@@ -162,8 +204,8 @@ public sealed class PauseMenuController : MonoBehaviour
         overlayRect.sizeDelta = Vector2.zero;
 
         Image backdrop = overlay.AddComponent<Image>();
-        backdrop.color = new Color(0.02f, 0.018f, 0.015f, 0.78f);
-        backdrop.raycastTarget = true;
+        EnsureStyle(ref backdropStyle, new Color(0.02f, 0.018f, 0.015f, 0.78f), true);
+        backdropStyle.ApplyTo(backdrop);
 
         GameObject panel = new GameObject("Panel");
         panel.transform.SetParent(overlay.transform, false);
@@ -176,14 +218,14 @@ public sealed class PauseMenuController : MonoBehaviour
         panelRect.sizeDelta = panelSize;
 
         Image panelImage = panel.AddComponent<Image>();
-        panelImage.color = new Color(0.07f, 0.06f, 0.048f, 0.96f);
-        panelImage.raycastTarget = true;
+        EnsureStyle(ref panelStyle, new Color(0.07f, 0.06f, 0.048f, 0.96f), true);
+        panelStyle.ApplyTo(panelImage);
 
-        UIFactory.CreateText(
+        Text title = UIFactory.CreateText(
             parent: panel.transform,
             name: "Title",
-            value: "Paused",
-            fontSize: 34,
+            value: titleText,
+            fontSize: titleFontSize,
             alignment: TextAnchor.MiddleCenter,
             anchorMin: new Vector2(0.5f, 1f),
             anchorMax: new Vector2(0.5f, 1f),
@@ -191,6 +233,7 @@ public sealed class PauseMenuController : MonoBehaviour
             anchoredPosition: new Vector2(0f, -28f),
             sizeDelta: new Vector2(340f, 54f)
         );
+        title.color = textColor;
 
         CreateSliderRow(panel.transform, "Music", new Vector2(0f, 100f), musicVolume, SetMusicVolume);
         CreateSliderRow(panel.transform, "SFX", new Vector2(0f, 36f), sfxVolume, SetSfxVolume);
@@ -218,6 +261,17 @@ public sealed class PauseMenuController : MonoBehaviour
         );
 
         button.onClick.AddListener(action);
+
+        Image image = button.GetComponent<Image>();
+        EnsureStyle(ref buttonStyle, new Color(0.18f, 0.18f, 0.18f, 1f), true);
+        buttonStyle.ApplyTo(image);
+
+        Text text = button.GetComponentInChildren<Text>();
+        if (text != null)
+        {
+            text.fontSize = buttonFontSize;
+            text.color = textColor;
+        }
     }
 
     private void CreateSliderRow(
@@ -237,11 +291,11 @@ public sealed class PauseMenuController : MonoBehaviour
         rowRect.anchoredPosition = position;
         rowRect.sizeDelta = new Vector2(340f, 52f);
 
-        UIFactory.CreateText(
+        Text labelText = UIFactory.CreateText(
             parent: row.transform,
             name: "Label",
             value: label,
-            fontSize: 18,
+            fontSize: labelFontSize,
             alignment: TextAnchor.MiddleLeft,
             anchorMin: new Vector2(0f, 0.5f),
             anchorMax: new Vector2(0f, 0.5f),
@@ -249,6 +303,7 @@ public sealed class PauseMenuController : MonoBehaviour
             anchoredPosition: Vector2.zero,
             sizeDelta: new Vector2(74f, 36f)
         );
+        labelText.color = textColor;
 
         Slider slider = CreateSlider(row.transform, label + "Slider", value);
 
@@ -275,11 +330,8 @@ public sealed class PauseMenuController : MonoBehaviour
         slider.maxValue = 1f;
         slider.value = Mathf.Clamp01(value);
 
-        GameObject backgroundObject = CreateSliderImage(
-            sliderObject.transform,
-            "Background",
-            new Color(0.15f, 0.14f, 0.12f, 1f)
-        );
+        EnsureStyle(ref sliderBackgroundStyle, new Color(0.15f, 0.14f, 0.12f, 1f), true);
+        GameObject backgroundObject = CreateSliderImage(sliderObject.transform, "Background", sliderBackgroundStyle);
         RectTransform backgroundRect = backgroundObject.transform as RectTransform;
         backgroundRect.anchorMin = new Vector2(0f, 0.5f);
         backgroundRect.anchorMax = new Vector2(1f, 0.5f);
@@ -297,11 +349,8 @@ public sealed class PauseMenuController : MonoBehaviour
         fillAreaRect.anchoredPosition = Vector2.zero;
         fillAreaRect.sizeDelta = new Vector2(-18f, 8f);
 
-        GameObject fillObject = CreateSliderImage(
-            fillAreaObject.transform,
-            "Fill",
-            new Color(0.62f, 0.49f, 0.25f, 1f)
-        );
+        EnsureStyle(ref sliderFillStyle, new Color(0.62f, 0.49f, 0.25f, 1f), true);
+        GameObject fillObject = CreateSliderImage(fillAreaObject.transform, "Fill", sliderFillStyle);
         RectTransform fillRect = fillObject.transform as RectTransform;
         fillRect.anchorMin = Vector2.zero;
         fillRect.anchorMax = Vector2.one;
@@ -319,11 +368,8 @@ public sealed class PauseMenuController : MonoBehaviour
         handleAreaRect.anchoredPosition = Vector2.zero;
         handleAreaRect.sizeDelta = new Vector2(-18f, 0f);
 
-        GameObject handleObject = CreateSliderImage(
-            handleAreaObject.transform,
-            "Handle",
-            new Color(0.9f, 0.78f, 0.46f, 1f)
-        );
+        EnsureStyle(ref sliderHandleStyle, new Color(0.9f, 0.78f, 0.46f, 1f), true);
+        GameObject handleObject = CreateSliderImage(handleAreaObject.transform, "Handle", sliderHandleStyle);
         RectTransform handleRect = handleObject.transform as RectTransform;
         handleRect.sizeDelta = new Vector2(18f, 18f);
 
@@ -335,7 +381,7 @@ public sealed class PauseMenuController : MonoBehaviour
         return slider;
     }
 
-    private static GameObject CreateSliderImage(Transform parent, string name, Color color)
+    private static GameObject CreateSliderImage(Transform parent, string name, UIImageStyle style)
     {
         GameObject imageObject = new GameObject(name);
         imageObject.transform.SetParent(parent, false);
@@ -343,9 +389,14 @@ public sealed class PauseMenuController : MonoBehaviour
         imageObject.AddComponent<RectTransform>();
 
         Image image = imageObject.AddComponent<Image>();
-        image.color = color;
-        image.raycastTarget = true;
+        style.ApplyTo(image);
 
         return imageObject;
+    }
+
+    private static void EnsureStyle(ref UIImageStyle style, Color fallbackColor, bool raycastTarget)
+    {
+        if (style == null)
+            style = UIImageStyle.Create(fallbackColor, raycastTarget);
     }
 }

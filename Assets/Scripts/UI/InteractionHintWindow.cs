@@ -18,6 +18,34 @@ public struct InteractionHintRequest
     public Vector3 WorldOffset;
     public Vector2 ScreenOffset;
     public float Duration;
+    public InteractionHintVisualOverrides VisualOverrides;
+}
+
+[System.Serializable]
+public struct InteractionHintVisualOverrides
+{
+    public bool OverrideWindowSize;
+    public Vector2 WindowSize;
+    public bool OverrideWindowStyle;
+    public UIImageStyle WindowStyle;
+    public bool OverrideTextColor;
+    public Color TextColor;
+    public bool OverrideFontSize;
+    public int FontSize;
+    public bool OverrideTextPadding;
+    public Vector2 TextPadding;
+
+    public bool HasAnyOverride
+    {
+        get
+        {
+            return OverrideWindowSize
+                || OverrideWindowStyle
+                || OverrideTextColor
+                || OverrideFontSize
+                || OverrideTextPadding;
+        }
+    }
 }
 
 public sealed class InteractionHintWindow : MonoBehaviour
@@ -32,7 +60,7 @@ public sealed class InteractionHintWindow : MonoBehaviour
     [Header("Window Visual")]
     [SerializeField] private Vector2 windowSize = new Vector2(420f, 118f);
     [SerializeField] private UIImageStyle windowStyle =
-        UIImageStyle.Create(new Color(0f, 0f, 0f, 0.72f), false);
+        UIImageStyle.Create(new Color(0f, 0f, 0f, 0f), false);
     [SerializeField] private Color textColor = Color.white;
     [SerializeField] private int fontSize = 20;
     [SerializeField] private Vector2 textPadding = new Vector2(24f, 16f);
@@ -102,6 +130,7 @@ public sealed class InteractionHintWindow : MonoBehaviour
         hideAtTime = Time.unscaledTime + Mathf.Max(0.1f, request.Duration);
         showing = true;
 
+        ApplyVisualOverrides(request.VisualOverrides);
         bodyText.text = request.Message;
         windowRect.gameObject.SetActive(true);
         RefreshPosition();
@@ -137,7 +166,7 @@ public sealed class InteractionHintWindow : MonoBehaviour
         backgroundImage = panelObject.AddComponent<Image>();
 
         if (windowStyle == null)
-            windowStyle = UIImageStyle.Create(new Color(0f, 0f, 0f, 0.72f), false);
+            windowStyle = UIImageStyle.Create(new Color(0f, 0f, 0f, 0f), false);
 
         windowStyle.ApplyTo(backgroundImage);
         backgroundImage.raycastTarget = false;
@@ -159,6 +188,45 @@ public sealed class InteractionHintWindow : MonoBehaviour
         bodyText.horizontalOverflow = HorizontalWrapMode.Wrap;
         bodyText.verticalOverflow = VerticalWrapMode.Truncate;
         bodyText.raycastTarget = false;
+    }
+
+    private void ApplyVisualOverrides(InteractionHintVisualOverrides visualOverrides)
+    {
+        Vector2 resolvedWindowSize = visualOverrides.OverrideWindowSize
+            ? visualOverrides.WindowSize
+            : windowSize;
+
+        windowRect.sizeDelta = resolvedWindowSize;
+
+        UIImageStyle resolvedWindowStyle = visualOverrides.OverrideWindowStyle
+            ? visualOverrides.WindowStyle
+            : windowStyle;
+
+        if (resolvedWindowStyle == null)
+            resolvedWindowStyle = UIImageStyle.Create(new Color(0f, 0f, 0f, 0f), false);
+
+        resolvedWindowStyle.ApplyTo(backgroundImage);
+        backgroundImage.raycastTarget = false;
+
+        bodyText.color = visualOverrides.OverrideTextColor
+            ? visualOverrides.TextColor
+            : textColor;
+
+        bodyText.fontSize = visualOverrides.OverrideFontSize
+            ? Mathf.Max(1, visualOverrides.FontSize)
+            : fontSize;
+
+        Vector2 resolvedPadding = visualOverrides.OverrideTextPadding
+            ? visualOverrides.TextPadding
+            : textPadding;
+
+        RectTransform textRect = bodyText.transform as RectTransform;
+
+        if (textRect != null)
+        {
+            textRect.offsetMin = resolvedPadding;
+            textRect.offsetMax = -resolvedPadding;
+        }
     }
 
     private void CreateCanvas()

@@ -23,7 +23,14 @@ public sealed class SceneInstaller : MonoBehaviour
     [Header("UI")]
     [SerializeField] private Canvas rootCanvas;
     [SerializeField] private InventoryUI inventoryUI;
+    [Tooltip("Optional scene instance. If empty, SceneInstaller uses Pause Menu Prefab or creates a runtime fallback.")]
     [SerializeField] private PauseMenuController pauseMenuController;
+    [Tooltip("Optional prefab used when no PauseMenuController exists under the root Canvas.")]
+    [SerializeField] private PauseMenuController pauseMenuPrefab;
+    [Tooltip("Optional scene instance. If empty, SceneInstaller uses Interaction Hint Window Prefab or lets InteractionHintWindow create a runtime fallback.")]
+    [SerializeField] private InteractionHintWindow interactionHintWindow;
+    [Tooltip("Optional prefab used when no InteractionHintWindow exists in the scene.")]
+    [SerializeField] private InteractionHintWindow interactionHintWindowPrefab;
 
     [Header("Craft Tables")]
     [SerializeField] private CraftTableBinding[] craftTables;
@@ -82,6 +89,7 @@ public sealed class SceneInstaller : MonoBehaviour
         InstallAudio();
         inventoryUI.Configure(rootCanvas, clayElement);
         InstallPauseMenu();
+        InstallInteractionHintWindow();
 
         InstallCraftTables();
 
@@ -98,8 +106,21 @@ public sealed class SceneInstaller : MonoBehaviour
 
     private void InstallPauseMenu()
     {
+        if (pauseMenuController != null && !pauseMenuController.gameObject.scene.IsValid())
+        {
+            PauseMenuController prefabReference = pauseMenuController;
+            pauseMenuController = Instantiate(prefabReference, rootCanvas.transform);
+            pauseMenuController.name = prefabReference.name;
+        }
+
         if (pauseMenuController == null)
             pauseMenuController = rootCanvas.GetComponentInChildren<PauseMenuController>(true);
+
+        if (pauseMenuController == null && pauseMenuPrefab != null)
+        {
+            pauseMenuController = Instantiate(pauseMenuPrefab, rootCanvas.transform);
+            pauseMenuController.name = pauseMenuPrefab.name;
+        }
 
         if (pauseMenuController == null)
         {
@@ -109,6 +130,25 @@ public sealed class SceneInstaller : MonoBehaviour
         }
 
         pauseMenuController.Configure(rootCanvas);
+    }
+
+    private void InstallInteractionHintWindow()
+    {
+        if (interactionHintWindow != null && !interactionHintWindow.gameObject.scene.IsValid())
+        {
+            InteractionHintWindow prefabReference = interactionHintWindow;
+            interactionHintWindow = Instantiate(prefabReference);
+            interactionHintWindow.name = prefabReference.name;
+        }
+
+        if (interactionHintWindow == null)
+            interactionHintWindow = FindAnyObjectByType<InteractionHintWindow>();
+
+        if (interactionHintWindow == null && interactionHintWindowPrefab != null)
+        {
+            interactionHintWindow = Instantiate(interactionHintWindowPrefab);
+            interactionHintWindow.name = interactionHintWindowPrefab.name;
+        }
     }
 
     private void InstallCraftTables()

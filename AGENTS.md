@@ -14,7 +14,7 @@ Unity 6000.4.5f1, URP. 3D golem-crafting game. No build/test/lint pipeline is co
 | CraftingSystem | `Assets/Scripts/Craft/CraftingSystem.cs` | Dictionary lookup by `CraftKey` using `roomId` plus 2 element ids. Input order is normalized. |
 | GameAudio | `Assets/Scripts/Music/GameAudio.cs` | Plays generated fallback sounds unless a `GameAudioProfile` provides custom clips. |
 | GameOverController | `Assets/Scripts/Scene/GameOverController.cs` | Static `IsGameOver` pauses movement/interaction checks. |
-| PauseMenuController | `Assets/Scripts/UI/PauseMenuController.cs` | Runtime Esc menu. `SceneInstaller` may auto-create it on the root Canvas if the Inspector field is empty. |
+| PauseMenuController | `Assets/Scripts/UI/PauseMenuController.cs` | Esc pause menu. Preferred setup is `Assets/Game/Prefabs/PF_PauseMenu.prefab` assigned to `SceneInstaller.pauseMenuPrefab`. |
 | Interaction hints | `Assets/Scripts/Interaction/InteractionHintOnInteract.cs` | Optional component for temporary text popups after interaction, including conditional rules for objects with hint state. |
 
 ## Data
@@ -46,8 +46,8 @@ Unity 6000.4.5f1, URP. 3D golem-crafting game. No build/test/lint pipeline is co
 
 ## UI And Visuals
 - UI is generated at runtime by `InventoryUI`, `CraftingPanelUI`, `TableItemUI`, `PauseMenuController`, and `UIFactory`.
-- `InventoryUI` and `CraftingPanelUI` expose Inspector fields for panel style, sprites, colors, slot sizes, icon sizes, and text sizes.
-- Pause menu is currently runtime-built: empty `SceneInstaller.pauseMenuController` is valid because `SceneInstaller` finds or creates `PauseMenuController` under `rootCanvas` during `Start()`.
+- `InventoryUI`, `CraftingPanelUI`, and `PauseMenuController` expose Inspector fields for panel style, sprites, colors, sizes, and text sizes.
+- Pause menu prefab: `Assets/Game/Prefabs/PF_PauseMenu.prefab`. In `Room_v3`, `SceneInstaller.pauseMenuPrefab` points to it, while `pauseMenuController` can stay empty unless a scene instance should override the prefab.
 - `ElementDefinition.Ui Background Mode` has priority over panel-level item backgrounds and follows the element in inventory, craft table UI, and drag previews.
 - Future finished panel art should be assigned as sprites in these Inspector fields. Use sliced sprites when panel borders need to scale cleanly.
 

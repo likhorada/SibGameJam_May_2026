@@ -48,7 +48,12 @@ MonoBehaviour:
   worldCamera: {fileID: 0}
   sortingOrder: 250
   windowSize: {x: 420, y: 118}
-  backgroundColor: {r: 0, g: 0, b: 0, a: 0.72}
+  windowStyle:
+    sprite: {fileID: 0}
+    imageType: 1
+    color: {r: 0, g: 0, b: 0, a: 0}
+    preserveAspect: 0
+    raycastTarget: 0
   textColor: {r: 1, g: 1, b: 1, a: 1}
   fontSize: 20
   textPadding: {x: 24, y: 16}

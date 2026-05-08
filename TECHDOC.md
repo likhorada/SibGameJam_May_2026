@@ -55,24 +55,28 @@ $env:DOTNET_NOLOGO = '1'
 2. Передает базу рецептов в `CraftingSystem`.
 3. Настраивает `GameAudio`, если назначены `GameAudioProfile` или `AudioSource`.
 4. Настраивает `InventoryUI`.
-5. Настраивает меню паузы через `PauseMenuController`: использует назначенную ссылку, находит существующий объект под Canvas или создает runtime-объект автоматически.
+5. Настраивает меню паузы через `PauseMenuController`: использует назначенный scene-instance, ищет существующий объект под Canvas, создает instance из `pauseMenuPrefab` или использует runtime fallback.
 6. Проходит по массиву `craftTables` и связывает физические столы с их `CraftingPanelUI`.
 
 Если что-то не работает на старте, первым делом проверять ссылки в `SceneInstaller`.
 
 ### PauseMenuController
 
-`PauseMenuController` отвечает за Esc-меню паузы. Сейчас это runtime UI: меню строится кодом через текущий `rootCanvas`, `UIFactory`, `Button`, `Slider`, `Image` и `Text`.
+`PauseMenuController` отвечает за Esc-меню паузы. Основной asset для настройки: `Assets/Game/Prefabs/PF_PauseMenu.prefab`. В prefab лежит компонент `PauseMenuController` с Inspector-полями для размеров, текста, громкости и `UIImageStyle`-стилей backdrop, panel, buttons, slider background/fill/handle.
+
+Сам overlay все еще собирается кодом через `rootCanvas`, `UIFactory`, `Button`, `Slider`, `Image` и `Text`, но теперь визуальные параметры берутся из prefab/scene-instance, а не захардкожены внутри метода сборки.
 
 Почему в Inspector у `SceneInstaller` может быть пустое поле `Pause Menu Controller`, но меню все равно работает:
 
 1. На `Start()` `SceneInstaller.InstallPauseMenu()` проверяет serialized поле `pauseMenuController`.
-2. Если поле пустое, он ищет `PauseMenuController` среди дочерних объектов `rootCanvas` через `GetComponentInChildren<PauseMenuController>(true)`.
-3. Если такого объекта нет, он создает новый `GameObject("PauseMenuController")` под `rootCanvas` и добавляет компонент `PauseMenuController`.
-4. Затем вызывает `pauseMenuController.Configure(rootCanvas)`.
-5. `Configure` строит overlay `PauseMenuOverlay`, сразу скрывает его и применяет стартовые значения громкости.
+2. Если туда случайно назначен prefab asset, а не scene-instance, он создает instance этого prefab под `rootCanvas`.
+3. Если поле пустое, он ищет `PauseMenuController` среди дочерних объектов `rootCanvas` через `GetComponentInChildren<PauseMenuController>(true)`.
+4. Если такого объекта нет и назначен `pauseMenuPrefab`, он создает instance prefab под `rootCanvas`.
+5. Если prefab тоже не назначен, он создает простой `GameObject("PauseMenuController")` под `rootCanvas` и добавляет компонент `PauseMenuController`.
+6. Затем вызывает `pauseMenuController.Configure(rootCanvas)`.
+7. `Configure` растягивает root объекта на весь Canvas, строит скрытый overlay `PauseMenuOverlay` дочерним объектом и применяет стартовые значения громкости.
 
-Поэтому пустая ссылка в `SceneInstaller` сейчас не ошибка. Это сделано как быстрый game-jam fallback, чтобы меню паузы появлялось даже без ручной настройки сцены.
+Поэтому пустая ссылка `Pause Menu Controller` сейчас не ошибка. Для `Room_v3` правильный путь - оставить scene-instance override пустым и назначить `PF_PauseMenu` в поле `Pause Menu Prefab`. Runtime fallback без prefab остается только страховкой, чтобы меню не пропало при неполной настройке сцены.
 
 Текущее поведение:
 
@@ -86,16 +90,15 @@ $env:DOTNET_NOLOGO = '1'
 - Ползунок `Music` вызывает `AmbientMusicSwitcher.SetMusicVolume` и меняет только эмбиент комнат.
 - Ползунок `SFX` вызывает `GameAudio.SetMasterVolume` и меняет только UI/gameplay SFX.
 
-Как позже настроить меню паузы нормально:
+Как подключать и настраивать меню паузы:
 
-1. Создать prefab или scene object под главным `Canvas`, например `PF_PauseMenu`.
-2. Повесить на него `PauseMenuController`.
-3. Назначить этот объект в `SceneInstaller.pauseMenuController`. Тогда `SceneInstaller` будет использовать его, а не создавать fallback-объект.
-4. Для полноценного арт/UI-прохода лучше вынести визуал из кода в prefab: backdrop, panel, кнопки, тексты и sliders должны быть обычными UI-объектами в Canvas.
-5. После этого можно расширить `PauseMenuController`: добавить serialized ссылки на готовые `Button`, `Slider`, `GameObject overlay`, стили/спрайты, и оставить runtime-сборку только как fallback.
-6. Если появится main menu/settings, перенести общие настройки громкости в отдельный сервис или ScriptableObject/PlayerPrefs, чтобы `Music` и `SFX` сохранялись между запусками.
-7. Проверить порядок canvas/sorting: pause overlay должен быть выше inventory, craft panel и hint windows.
-8. Обязательно проверить Play Mode: `Esc`, craft panel conflict, restart, quit в Editor, оба slider'а, движение и `E` во время паузы.
+1. Открыть `SceneInstaller` в сцене.
+2. Поле `Pause Menu Controller` использовать только если в сцене уже есть конкретный instance меню под Canvas и нужно явно выбрать именно его.
+3. Поле `Pause Menu Prefab` должно ссылаться на `Assets/Game/Prefabs/PF_PauseMenu.prefab`. В `Room_v3` эта ссылка уже назначена.
+4. В prefab `PF_PauseMenu` настраиваются `Panel Size`, `Button Size`, `Slider Size`, `Title Text`, размеры текста, стартовые `Music` / `SFX`.
+5. Для кастомного арта раскрыть `Backdrop Style`, `Panel Style`, `Button Style`, `Slider Background Style`, `Slider Fill Style`, `Slider Handle Style` и назначить нужные sprites/colors. Для масштабируемых рамок использовать sliced sprites и `Image Type = Sliced`.
+6. После изменения prefab проверить Play Mode: `Esc`, закрытие craft panel через `Esc`, restart, quit в Editor, оба slider'а, движение и `E` во время паузы.
+7. Если позже понадобится полностью ручная UI-иерархия с заранее расставленными `Button`/`Slider`, расширить `PauseMenuController` serialized ссылками на готовые дочерние объекты, сохранив текущую prefab-driven сборку как fallback.
 
 ### Static singleton-состояние
 
@@ -358,7 +361,7 @@ UI создается runtime-кодом, но основные визуальн
 - `InteractionHintWindow` - окно, которое показывает текст;
 - `Assets/Game/Prefabs/PF_InteractionHintWindow.prefab` - готовый prefab окна.
 
-`PF_InteractionHintWindow.prefab` необязателен. Если в сцене нет окна, первое взаимодействие создаст runtime-окно автоматически.
+`PF_InteractionHintWindow.prefab` необязателен. В `Room_v3` он назначен в `SceneInstaller.interactionHintWindowPrefab`, поэтому его `Window Style` работает как общий дефолт для всех подсказок. Если prefab не назначен и окна нет в сцене, первое взаимодействие создаст runtime-окно автоматически.
 
 ### Как добавить подсказку объекту
 
@@ -368,6 +371,7 @@ UI создается runtime-кодом, но основные визуальн
 4. Настроить `Max Show Count`.
 5. Настроить `Placement`.
 6. Проверить позицию через `World Offset` и `Screen Offset`.
+7. Если этому объекту нужен свой фон/цвет/размер текста, раскрыть `Visual Override` и включить нужные `Override ...` флаги.
 
 Если нужен один текст на каждое взаимодействие, достаточно блока `Default Hint`. Если нужны разные тексты для разных состояний объекта, использовать массив `Rules`.
 
@@ -382,8 +386,22 @@ UI создается runtime-кодом, но основные визуальн
 | `Custom World Anchor` | Точка в мире, если выбран custom world placement |
 | `World Offset` | Смещение от объекта/anchor |
 | `Screen Offset` | Смещение в UI-координатах |
+| `Visual Override` | Необязательное переопределение визуала подсказки именно для этого объекта |
 
-Визуал самого окна настраивается в `InteractionHintWindow` через `Window Style`: можно оставить текущий полупрозрачный цвет или назначить sprite.
+### Визуал подсказки
+
+`InteractionHintWindow` или `PF_InteractionHintWindow.prefab` задает общий внешний вид подсказок по умолчанию. Это удобно для базового стиля всей игры. Чтобы настройки prefab точно использовались, назначить `PF_InteractionHintWindow` в `SceneInstaller > Interaction Hint Window Prefab` или положить instance `InteractionHintWindow` в сцену.
+
+Если отдельному объекту нужен другой вид, использовать `InteractionHintOnInteract > Visual Override`:
+
+1. Включить только те флаги `Override ...`, которые нужно заменить.
+2. `Override Window Style` меняет фон: можно задать цвет, sprite и `Image Type`.
+3. `Override Window Size` меняет размер панели.
+4. `Override Text Color`, `Override Font Size`, `Override Text Padding` меняют текст.
+
+Если у объекта есть `Rules`, у каждого правила тоже есть `Visual Override`. Оно имеет приоритет над визуалом объекта. Это позволяет, например, показывать красный фон для "нет нужного предмета", зеленый фон для "активировано" и обычный фон для остальных подсказок.
+
+Если ни один override не включен, используется стиль из `InteractionHintWindow`/prefab.
 
 ### Условные подсказки
 
@@ -397,6 +415,7 @@ UI создается runtime-кодом, но основные визуальн
 | `Message` | Текст именно для этого условия |
 | `Max Show Count` | Сколько раз это правило может показаться |
 | `Duration` | Сколько секунд висит этот текст |
+| `Visual Override` | Необязательный стиль именно для этого правила; имеет приоритет над стилем объекта |
 
 Условия для объектов с `IInteractionHintStateProvider`:
 

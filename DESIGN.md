@@ -169,12 +169,12 @@ The main UI is generated at runtime:
 - `CraftingPanelUI` creates the craft table overlay.
 - `TableDropArea` accepts dragged elements.
 - `TableItemUI` handles table items and pair crafting.
-- `PauseMenuController` creates the Esc pause overlay at runtime if no scene/prefab instance is assigned.
+- `PauseMenuController` creates the Esc pause overlay from `PF_PauseMenu` settings or from a scene instance assigned in `SceneInstaller`.
 - `InteractionHintWindow` shows temporary hint popups.
 
-`InventoryUI` and `CraftingPanelUI` expose Inspector fields for future visual polish: panel sprites, colors, slot sizes, icon sizes, and text sizes. `ElementDefinition` can also define a personal UI background that follows that element in inventory, craft table UI, and drag previews. If no personal background is configured, craft table items use the panel-level `Table Item Background Mode` fallback.
+`InventoryUI`, `CraftingPanelUI`, and `PauseMenuController` expose Inspector fields for visual polish: panel sprites, button sprites, slider sprites, colors, slot sizes, icon sizes, and text sizes. `ElementDefinition` can also define a personal UI background that follows that element in inventory, craft table UI, and drag previews. If no personal background is configured, craft table items use the panel-level `Table Item Background Mode` fallback.
 
-Pause menu has `Resume`, `Restart`, `Quit`, and separate `Music` / `SFX` sliders. The `Music` slider controls room ambience through `AmbientMusicSwitcher`; the `SFX` slider controls UI and gameplay sounds through `GameAudio`.
+Pause menu uses `Assets/Game/Prefabs/PF_PauseMenu.prefab`. It has `Resume`, `Restart`, `Quit`, and separate `Music` / `SFX` sliders. The `Music` slider controls room ambience through `AmbientMusicSwitcher`; the `SFX` slider controls UI and gameplay sounds through `GameAudio`.
 
 ## Audio
 
@@ -186,7 +186,7 @@ Pause menu has `Resume`, `Restart`, `Quit`, and separate `Music` / `SFX` sliders
 ## Architecture Notes
 
 - `SceneInstaller` wires scene references on `Start()`.
-- `SceneInstaller.pauseMenuController` is optional: if it is empty, `SceneInstaller` finds or creates `PauseMenuController` under the root Canvas.
+- `SceneInstaller.pauseMenuController` is an optional scene-instance override. If it is empty, `SceneInstaller` searches under the root Canvas, then instantiates `pauseMenuPrefab`, then falls back to a plain runtime `PauseMenuController`.
 - Static singleton-style access is used by `Inventory`, `CraftingSystem`, `GameOverController`, and `GameAudio`.
 - ScriptableObjects hold data: `ElementDefinition`, `CraftRecipeDatabase`, `GameAudioProfile`.
 - There are no automated gameplay tests. Verify in Unity Editor Play Mode.

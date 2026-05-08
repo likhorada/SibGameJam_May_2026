@@ -1028,6 +1028,10 @@ MonoBehaviour:
   gameAudioVolume: 1
   rootCanvas: {fileID: 1799028469}
   inventoryUI: {fileID: 149222678}
+  pauseMenuController: {fileID: 0}
+  pauseMenuPrefab: {fileID: 8422307566853061111, guid: 2c2bc3864d6f0c74ba13fce03f3f8a1d, type: 3}
+  interactionHintWindow: {fileID: 0}
+  interactionHintWindowPrefab: {fileID: 7194206916331784603, guid: f60a1e14b0734cd892d27c09be4b46f4, type: 3}
   craftTables:
   - TableId: table_01
     RoomId: room_01
@@ -2800,6 +2804,22 @@ MonoBehaviour:
   customWorldAnchor: {fileID: 0}
   worldOffset: {x: 0, y: 1.25, z: 0}
   screenOffset: {x: 0, y: 110}
+  visualOverride:
+    overrideWindowSize: 0
+    windowSize: {x: 420, y: 118}
+    overrideWindowStyle: 0
+    windowStyle:
+      sprite: {fileID: 0}
+      imageType: 1
+      color: {r: 0, g: 0, b: 0, a: 0.72}
+      preserveAspect: 0
+      raycastTarget: 0
+    overrideTextColor: 0
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideFontSize: 0
+    fontSize: 20
+    overrideTextPadding: 0
+    textPadding: {x: 24, y: 16}
 --- !u!1001 &460559713
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6812,6 +6832,22 @@ MonoBehaviour:
   customWorldAnchor: {fileID: 0}
   worldOffset: {x: 0, y: 1.25, z: 0}
   screenOffset: {x: 0, y: 110}
+  visualOverride:
+    overrideWindowSize: 0
+    windowSize: {x: 420, y: 118}
+    overrideWindowStyle: 0
+    windowStyle:
+      sprite: {fileID: 0}
+      imageType: 1
+      color: {r: 0, g: 0, b: 0, a: 0}
+      preserveAspect: 0
+      raycastTarget: 0
+    overrideTextColor: 0
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideFontSize: 0
+    fontSize: 20
+    overrideTextPadding: 0
+    textPadding: {x: 24, y: 16}
 --- !u!1001 &1539441404
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8513,16 +8549,64 @@ MonoBehaviour:
     message: "\u041D\u0430\u0434\u043E \u0422\u043E\u0440\u0447"
     maxShowCount: 0
     duration: 2.5
+    visualOverride:
+      overrideWindowSize: 0
+      windowSize: {x: 420, y: 118}
+      overrideWindowStyle: 0
+      windowStyle:
+        sprite: {fileID: 0}
+        imageType: 1
+        color: {r: 0, g: 0, b: 0, a: 0.72}
+        preserveAspect: 0
+        raycastTarget: 0
+      overrideTextColor: 0
+      textColor: {r: 1, g: 1, b: 1, a: 1}
+      overrideFontSize: 0
+      fontSize: 20
+      overrideTextPadding: 0
+      textPadding: {x: 24, y: 16}
   - condition: 4
     message: "\u041F\u043E\u0448\u043B\u043E"
     maxShowCount: 0
     duration: 2.5
+    visualOverride:
+      overrideWindowSize: 0
+      windowSize: {x: 420, y: 118}
+      overrideWindowStyle: 0
+      windowStyle:
+        sprite: {fileID: 0}
+        imageType: 1
+        color: {r: 0, g: 0, b: 0, a: 0.72}
+        preserveAspect: 0
+        raycastTarget: 0
+      overrideTextColor: 0
+      textColor: {r: 1, g: 1, b: 1, a: 1}
+      overrideFontSize: 0
+      fontSize: 20
+      overrideTextPadding: 0
+      textPadding: {x: 24, y: 16}
   maxShowCount: 0
   duration: 2.5
   placement: 1
   customWorldAnchor: {fileID: 0}
   worldOffset: {x: 0, y: 1.25, z: 0}
   screenOffset: {x: 0, y: 110}
+  visualOverride:
+    overrideWindowSize: 0
+    windowSize: {x: 420, y: 118}
+    overrideWindowStyle: 0
+    windowStyle:
+      sprite: {fileID: 0}
+      imageType: 1
+      color: {r: 0, g: 0, b: 0, a: 0.72}
+      preserveAspect: 0
+      raycastTarget: 0
+    overrideTextColor: 0
+    textColor: {r: 1, g: 1, b: 1, a: 1}
+    overrideFontSize: 0
+    fontSize: 20
+    overrideTextPadding: 0
+    textPadding: {x: 24, y: 16}
 --- !u!1 &2124582251
 GameObject:
   m_ObjectHideFlags: 0
