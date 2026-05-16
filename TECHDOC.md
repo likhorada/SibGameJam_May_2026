@@ -1,4 +1,4 @@
-# Техническая документация проекта
+﻿# Техническая документация проекта
 
 Проект: Unity 6000.4.5f1, URP, 3D-игра про крафт голема. Основная сцена: `Assets/Scenes/Room_v3.unity`.
 
@@ -248,6 +248,22 @@ Prefab из `Assets/Game/Art/ElementModels/` берет level FBX, ищет до
 4. Проверить Console.
 5. Временно заменить `worldPrefab` на primitive-prefab.
 
+## Анимация секций стола (room_04)
+
+В комнате `room_04` (кабинет алхимика) стол подношений открывает проход через `Room04PassageOpener`. Сейчас в сцене вручную назначены четыре реальные секции столешницы в массиве `Panel Motions`.
+
+Текущая рабочая настройка:
+
+1. Для каждой секции задан `Target` в `Panel Motions`.
+2. `Position Space = World`, чтобы смещение по `Y` всегда было мировым вверх/вниз, а не локальной осью импортированного FBX-объекта.
+3. `Position Offset = { x: 0, y: -0.05, z: 0 }`, то есть секции слегка опускаются вниз.
+4. `Euler Offset = { x: 0, y: 0, z: 0 }`, поэтому секции не вращаются.
+5. `Delay` можно использовать для стадийного движения секций.
+
+В Play Mode после заполнения стола в Console должна появиться строка `Room04PassageOpener: captured 4 assigned panel motions`. Если там `0 assigned panel motions`, значит в `Panel Motions` не назначены `Target`.
+
+Если позже понадобится именно hinge-поворот, можно использовать `Euler Offset` и локальные пивоты, но это не текущая настройка `Room_v3`. Актуальная пошаговая инструкция по финалу лежит в `Assets/Game/Docs/FINALE_SETUP_RU.md`.
+
 ## Аудио взаимодействий
 
 Все игровые SFX вызываются через:
@@ -451,6 +467,46 @@ UI создается runtime-кодом, но основные визуальн
 2. Добавить рецепт в `MainCraftRecipeDatabase`.
 3. На объекте с `CraftGameOverTrigger` назначить этот элемент в `gameOverElement`.
 4. Проверить наличие `GameOverController` в сцене.
+
+## Finale setup
+
+Подробная пошаговая инструкция: `Assets/Game/Docs/FINALE_SETUP_RU.md`.
+
+Новые компоненты:
+
+- `Room04PassageOpener` - подключается к `OfferingTableInteractable.onCompleted` существующего `Empty/Table_Stone_Round_001`, двигает панели стола, скрывает `CubeHole`, отключает blocking colliders и включает проход.
+- `InspectorObjectSequence` - универсальный Inspector-компонент для движения Transform'ов и включения/выключения объектов или colliders.
+- `OfferingTableCompletionGroup` - принимает массив Offering Table и вызывает `onAllCompleted`, когда каждый стол завершен.
+- `FinaleSequenceController` - запускает UnityEvents, Animator triggers, Timeline, опциональное видео и финальное окно.
+- `FinalEndingWindowController` - генерирует финальный overlay с Restart/Quit и настраиваемым визуалом.
+
+Prefab-шаблоны:
+
+- `Assets/Game/Prefabs/PF_Room04PassageOpener.prefab`
+- `Assets/Game/Prefabs/PF_Room05FinaleController.prefab`
+- `Assets/Game/Prefabs/PF_OfferingTable_Final_Spirit.prefab`
+- `Assets/Game/Prefabs/PF_OfferingTable_Final_Mind.prefab`
+- `Assets/Game/Prefabs/PF_OfferingTable_Final_Body.prefab`
+- `Assets/Game/Prefabs/PF_OfferingTable_Final_Soul.prefab`
+
+## Player model setup
+
+Detailed setup and extension notes: `Assets/Game/Docs/PLAYER_MODEL.md`.
+
+Current runtime assets:
+
+- `Assets/Game/Resources/Characters/Golem/gogolem_re.fbx`
+- `Assets/Game/Resources/Characters/Golem/gogolem.fbx`
+- `Assets/Game/Resources/Characters/Golem/GolemTexture.png`
+- `Assets/Game/Resources/Characters/Golem/GolemTexture.mat`
+
+`PF_Player` stays responsible for gameplay physics, movement, and interaction. `PlayerVisualAutoLoader` only adds the visible child model. It first tries `Characters/Golem/GolemVisual`, then falls back to the imported FBX path `Characters/Golem/gogolem_re`, so a hand-authored visual prefab can be added later without changing scene wiring. Animation clips are loaded from `gogolem_re` first and can fall back to `Characters/Golem/gogolem`.
+
+`PlayerEmbeddedClipAnimator` is a configurable component on `PF_Player`. At runtime `PlayerVisualAutoLoader` passes it the loaded visual root, and the animator plays embedded FBX clips through Unity Playables. It loads clips with `Resources.LoadAll<AnimationClip>()`, selects idle/walk clips by name when possible, and falls back to the first embedded clip when the FBX has unnamed takes. The runtime log also prints the selected `Animator` Avatar; if it says `none`, reimport the FBX as `Generic` with `Avatar Definition = Create From This Model`, otherwise clips can be discovered while the mesh stays in T-pose. `PlayerProceduralAnimator` can still add subtle bob/sway on top of the authored bone animation.
+
+For this golem FBX, keep the model importer hierarchy stable: preserve hierarchy, do not sort hierarchy by name, and do not optimize bones. Animation bindings are name/path based, so importer-side hierarchy changes can make valid clips fail to affect the visible skeleton.
+
+For authored animation clips later, create `Assets/Game/Resources/Characters/Golem/GolemVisual.prefab`, add the imported model plus an `Animator` if the artist wants a controller-driven setup, then disable `playEmbeddedAnimationClips` on `PF_Player` or keep the Playables-based loader as the no-controller fallback.
 
 ## Room transitions
 

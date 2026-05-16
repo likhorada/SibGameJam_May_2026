@@ -1,4 +1,4 @@
-# DESIGNRU.md - Golem Craft
+﻿# DESIGNRU.md - Golem Craft
 
 ## Обзор
 
@@ -24,6 +24,8 @@
 
 - Движение работает через `Rigidbody`.
 - Направление движения берется относительно активной камеры с наибольшим `depth`.
+- `PF_Player` оставляет физику, collider и взаимодействие на корневом объекте. Видимая модель голема подгружается дочерним объектом через `PlayerVisualAutoLoader` из `Assets/Game/Resources/Characters/Golem/`.
+- `PlayerEmbeddedClipAnimator` настраивается на `PF_Player` и проигрывает встроенные в FBX `AnimationClip` через Unity Playables без Animator Controller. `PlayerProceduralAnimator` может добавлять легкое покачивание поверх костной анимации. Подробно: `Assets/Game/Docs/PLAYER_MODEL.md`.
 - В инвентаре 4 обычных слота.
 - Глина всегда доступна через отдельный UI-слот. Она не хранится в массиве `Inventory` и не занимает обычный слот.
 
@@ -34,7 +36,7 @@
 | Уровень 1 | `room_01` | Кузница: верстак, наковальня, печь | Стол крафта | iron, flint, coal, wood, air |
 | Уровень 2 | `room_02` | Влажная комната: котел, активируется факелом | Стол крафта | water, saltpeter, lime, vitriol |
 | Уровень 3 | `room_03` | Кладовая: главный верстак, органика | Стол крафта | herbs, berries, horn |
-| Уровень 4 | `room_04` | Кабинет алхимика, открывает финал | 1 стол подношений | cinnabar, chest, yeast |
+| Уровень 4 | `room_04` | Кабинет алхимика, открывает финал (четыре назначенные секции стола двигаются вертикально через `Room04PassageOpener.Panel Motions`) | 1 стол подношений | cinnabar, chest, yeast |
 | Уровень 5 | `room_05` | Магическая комната, финал | 4 стола подношений | нет |
 
 Все комнаты находятся в одной сцене `Assets/Scenes/Room_v3.unity` и соединены триггерами `RoomTransitionTrigger`.
@@ -154,6 +156,14 @@
 3. `body`: clay+iron=ore, ore+fire=copper, clay+copper=body.
 4. `soul`: fire+water=alcohol, alcohol+herbs=tincture, water+berries=must, must+horn=wine, tincture+wine=soul_essence, soul_essence+elixir=soul.
 
+## Финальная прогрессия
+
+В Room 4 используется уже размещенный `OfferingTableInteractable` на `Empty/Table_Stone_Round_001`. Когда на нем лежат все три артефакта, `Room04PassageOpener` может сдвинуть четыре назначенные секции столешницы, скрыть `CubeHole`, отключить блокеры и включить переход в Room 5. Текущая настройка сцены использует вертикальное смещение в мировых осях без вращения; подробные заметки лежат в `Assets/Game/Docs/FINALE_SETUP_RU.md`.
+
+Room 5 работает через четыре стола подношений с одним элементом на каждом: `spirit`, `mind`, `body`, `soul`. `OfferingTableCompletionGroup` ждет завершения всех четырех столов и вызывает `FinaleSequenceController`, который запускает scene events, Animator triggers, Timeline, опциональное видео и затем `FinalEndingWindowController`.
+
+Подробная инструкция по подключению через Inspector лежит в `Assets/Game/Docs/FINALE_SETUP_RU.md`.
+
 ## Game Over
 
 Создание `explosion` в `room_02` запускает `GameOverController`. На экране появляется overlay с кнопкой рестарта, а геймплей ставится на паузу через `Time.timeScale = 0`.
@@ -185,6 +195,7 @@
 
 - `SceneInstaller` связывает ссылки сцены на `Start()`.
 - `SceneInstaller.pauseMenuController` - необязательный override для scene-instance. Если он пустой, `SceneInstaller` ищет меню под root Canvas, затем создает instance из `pauseMenuPrefab`, затем использует простой runtime fallback.
+- Визуал игрока подгружается через `Resources` компонентом `PlayerVisualAutoLoader`; embedded-клипы модели настраиваются на `PF_Player` и проигрываются через `PlayerEmbeddedClipAnimator`. Gameplay-код должен зависеть от `PlayerMovement`, `PlayerInteractor`, `Rigidbody` и collider на `PF_Player`, а не от имен дочерних объектов модели.
 - Статическое singleton-состояние используется в `Inventory`, `CraftingSystem`, `GameOverController` и `GameAudio`.
 - Данные лежат в ScriptableObject: `ElementDefinition`, `CraftRecipeDatabase`, `GameAudioProfile`.
 - Автоматических gameplay-тестов нет. Проверка проводится в Unity Editor Play Mode.

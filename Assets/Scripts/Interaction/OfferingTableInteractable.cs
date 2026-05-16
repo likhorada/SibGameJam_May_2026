@@ -24,6 +24,7 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
 
     [Header("Completion")]
     [SerializeField] private UnityEvent onCompleted = new UnityEvent();
+    [SerializeField] private OfferingTableElementEvent onItemPlaced = new OfferingTableElementEvent();
 
     private bool[] placed;
     private GameObject[] spawnedVisuals;
@@ -34,6 +35,35 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
     }
 
     public event Action Completed;
+    public event Action<ElementDefinition, int> ItemPlaced;
+
+    public int RequiredCount
+    {
+        get { return requiredItems == null ? 0 : requiredItems.Length; }
+    }
+
+    public int PlacedCount
+    {
+        get
+        {
+            EnsureRuntimeState();
+
+            int count = 0;
+
+            for (int i = 0; i < placed.Length; i++)
+            {
+                if (placed[i])
+                    count++;
+            }
+
+            return count;
+        }
+    }
+
+    public bool IsComplete
+    {
+        get { return IsCompleted(); }
+    }
 
     private void Awake()
     {
@@ -105,6 +135,8 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
 
         Debug.Log(gameObject.name + ": placed " + element.DisplayName);
         GameAudio.Play(GameSoundId.OfferingPlace);
+        ItemPlaced?.Invoke(element, itemIndex);
+        onItemPlaced.Invoke(element);
 
         if (IsCompleted())
             OnCompleted();
@@ -201,6 +233,8 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
 
     private bool IsCompleted()
     {
+        EnsureRuntimeState();
+
         if (requiredItems == null || requiredItems.Length == 0)
             return false;
 
@@ -270,4 +304,9 @@ public sealed class OfferingTableInteractable : MonoBehaviour, IInteractable
 
         return result;
     }
+}
+
+[Serializable]
+public sealed class OfferingTableElementEvent : UnityEvent<ElementDefinition>
+{
 }

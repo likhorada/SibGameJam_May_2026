@@ -16,6 +16,7 @@ Unity 6000.4.5f1, URP. 3D golem-crafting game. No build/test/lint pipeline is co
 | GameOverController | `Assets/Scripts/Scene/GameOverController.cs` | Static `IsGameOver` pauses movement/interaction checks. |
 | PauseMenuController | `Assets/Scripts/UI/PauseMenuController.cs` | Esc pause menu. Preferred setup is `Assets/Game/Prefabs/PF_PauseMenu.prefab` assigned to `SceneInstaller.pauseMenuPrefab`. |
 | Interaction hints | `Assets/Scripts/Interaction/InteractionHintOnInteract.cs` | Optional component for temporary text popups after interaction, including conditional rules for objects with hint state. |
+| Player visual | `Assets/Scripts/Player/PlayerVisualAutoLoader.cs` | Loads `Resources/Characters/Golem/GolemVisual` first, then falls back to `Resources/Characters/Golem/gogolem_re`. Configures the `PF_Player` `PlayerEmbeddedClipAnimator` for FBX clips and optional procedural bob/sway. |
 
 ## Data
 - `ElementDefinition`: `Create > Golem Craft/Element Definition` (`id`, icon, optional personal UI background, world prefab, `discardOnTableClose`)
@@ -23,6 +24,8 @@ Unity 6000.4.5f1, URP. 3D golem-crafting game. No build/test/lint pipeline is co
 - `GameAudioProfile`: `Create > Golem Craft/Audio/Game Audio Profile` (custom clips per `GameSoundId`)
 - Element world models: `Assets/Game/Prefabs/ElementWorldModels/`
 - Imported element wrappers: `Assets/Game/Art/ElementModels/`
+- Player model runtime assets: `Assets/Game/Resources/Characters/Golem/`
+- Player model usage notes: `Assets/Game/Docs/PLAYER_MODEL.md`
 - Default audio profile: `Assets/Game/Audio/DefaultGameAudioProfile.asset`
 
 ## Interaction Flow
@@ -41,7 +44,7 @@ Unity 6000.4.5f1, URP. 3D golem-crafting game. No build/test/lint pipeline is co
 | 1 | `room_01` | Forge | Craft Table | iron, flint, coal, wood, air | yes |
 | 2 | `room_02` | Wet room, boiler activated with torch | Craft Table | water, saltpeter, lime, vitriol | yes |
 | 3 | `room_03` | Pantry, master workbench | Craft Table | herbs, berries, horn | yes |
-| 4 | `room_04` | Alchemist study | Offering Table x1 | cinnabar, chest, yeast | no |
+| 4 | `room_04` | Alchemist study (four assigned table sections move vertically via `Room04PassageOpener.Panel Motions`) | Offering Table x1 | cinnabar, chest, yeast | no |
 | 5 | `room_05` | Magic chamber finale | Offering Tables x4 | none | no |
 
 ## UI And Visuals
@@ -50,6 +53,7 @@ Unity 6000.4.5f1, URP. 3D golem-crafting game. No build/test/lint pipeline is co
 - Pause menu prefab: `Assets/Game/Prefabs/PF_PauseMenu.prefab`. In `Room_v3`, `SceneInstaller.pauseMenuPrefab` points to it, while `pauseMenuController` can stay empty unless a scene instance should override the prefab.
 - `ElementDefinition.Ui Background Mode` has priority over panel-level item backgrounds and follows the element in inventory, craft table UI, and drag previews.
 - Future finished panel art should be assigned as sprites in these Inspector fields. Use sliced sprites when panel borders need to scale cleanly.
+- `PF_Player` keeps the gameplay collider/Rigidbody on the root and loads the visible golem model as a child at runtime.
 
 ## Audio
 - Existing code calls `GameAudio.Play(GameSoundId.X)`.

@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 989909264856261783}
   - component: {fileID: 1775611707533601848}
   - component: {fileID: 7354452083091846242}
+  - component: {fileID: 5846173421169579042}
   m_Layer: 0
   m_Name: PF_Player
   m_TagString: Player
@@ -184,7 +185,60 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerVisualAutoLoader
   resourcePath: Characters/Golem/GolemVisual
+  fallbackResourcePath: Characters/Golem/gogolem_re
+  animationFallbackResourcePath: Characters/Golem/gogolem
+  visualInstanceName: GolemVisual
   localPosition: {x: 0, y: 0, z: 0}
   localEulerAngles: {x: 0, y: 0, z: 0}
   localScale: {x: 1, y: 1, z: 1}
   hideBuiltInRenderer: 1
+  reuseExistingVisualChild: 1
+  removeExtraVisualChildren: 1
+  useRendererNameWhitelist: 1
+  visibleRendererNameContains:
+  - Arm_L
+  - Arm_R
+  - Leg_L
+  - Leg_R
+  - Head
+  - Torso
+  - Weist
+  logRendererSetup: 1
+  playEmbeddedAnimationClips: 1
+  embeddedClipAnimator: {fileID: 5846173421169579042}
+  addProceduralAnimator: 0
+--- !u!114 &5846173421169579042
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2069829488641372508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38f04d35a0af41cdb1534f68dc7d8dde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerEmbeddedClipAnimator
+  visualRoot: {fileID: 0}
+  waitForConfiguredVisual: 1
+  modelResourcePath: Characters/Golem/gogolem_re
+  fallbackModelResourcePath: Characters/Golem/gogolem
+  playbackBackend: 0
+  idleActionId: idle
+  walkActionId: walk
+  idleExactClipName: Armature|IDLE
+  walkExactClipName: Armature|WALK
+  idleNameContains: idle
+  walkNameContains: walk
+  extraActions: []
+  walkThreshold: 0.05
+  blendSpeed: 8
+  idlePlaybackSpeed: 0.35
+  walkPlaybackSpeed: 1
+  useTransformDeltaSpeed: 1
+  forceActionId: 
+  logLoadedClips: 1
+  logMissingConfiguredActions: 1
+  logActionChanges: 1
+  currentActionId: 
+  currentPlanarSpeed: 0

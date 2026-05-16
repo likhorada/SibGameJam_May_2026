@@ -1,4 +1,4 @@
-# DESIGN.md - Golem Craft
+﻿# DESIGN.md - Golem Craft
 
 ## Overview
 
@@ -24,6 +24,8 @@
 
 - Movement uses `Rigidbody`.
 - The active camera with the highest depth defines camera-relative movement.
+- `PF_Player` keeps physics and interaction on the root object. `PlayerVisualAutoLoader` loads the golem FBX visual from `Assets/Game/Resources/Characters/Golem/` at runtime.
+- `PlayerEmbeddedClipAnimator` is configured on `PF_Player` and plays embedded FBX `AnimationClip`s through Unity Playables without an Animator Controller. `PlayerProceduralAnimator` can add lightweight bob/sway on top. See `Assets/Game/Docs/PLAYER_MODEL.md`.
 - Inventory has 4 normal item slots.
 - Clay is permanent and UI-only. It appears as an extra slot, but is not stored in `Inventory`.
 
@@ -34,7 +36,7 @@
 | Level 1 | `room_01` | Forge: workbench, anvil, furnace | Craft Table | iron, flint, coal, wood, air |
 | Level 2 | `room_02` | Wet room: boiler, activated with torch | Craft Table | water, saltpeter, lime, vitriol |
 | Level 3 | `room_03` | Pantry: master workbench, organic recipes | Craft Table | herbs, berries, horn |
-| Level 4 | `room_04` | Alchemist study, unlocks finale | Offering Table x1 | cinnabar, chest, yeast |
+| Level 4 | `room_04` | Alchemist study, unlocks finale (four assigned table sections move vertically via `Room04PassageOpener.Panel Motions`) | Offering Table x1 | cinnabar, chest, yeast |
 | Level 5 | `room_05` | Magic chamber finale | Offering Tables x4 | none |
 
 Rooms are placed in one scene, `Assets/Scenes/Room_v3.unity`, and connected by `RoomTransitionTrigger` colliders.
@@ -156,6 +158,14 @@ Rooms are placed in one scene, `Assets/Scenes/Room_v3.unity`, and connected by `
 3. `body`: clay+iron=ore, ore+fire=copper, clay+copper=body.
 4. `soul`: fire+water=alcohol, alcohol+herbs=tincture, water+berries=must, must+horn=wine, tincture+wine=soul_essence, soul_essence+elixir=soul.
 
+## Finale Progression
+
+Room 4 uses the already placed `OfferingTableInteractable` on `Empty/Table_Stone_Round_001`. When its three artifacts are placed, `Room04PassageOpener` can move the four assigned tabletop sections, hide `CubeHole`, disable blockers, and enable the transition toward Room 5. Current scene setup uses world-space vertical offsets without rotation; detailed tuning notes live in `Assets/Game/Docs/FINALE_SETUP_RU.md`.
+
+Room 5 is driven by four one-item offering tables for `spirit`, `mind`, `body`, and `soul`. `OfferingTableCompletionGroup` waits for all four tables, then invokes `FinaleSequenceController`, which can trigger scene events, Animator triggers, Timeline, optional video playback, and finally `FinalEndingWindowController`.
+
+Detailed Inspector setup lives in `Assets/Game/Docs/FINALE_SETUP_RU.md`.
+
 ## Game Over
 
 Crafting `explosion` in `room_02` triggers `GameOverController`. The overlay shows a restart button and pauses gameplay with `Time.timeScale = 0`.
@@ -187,6 +197,7 @@ Pause menu uses `Assets/Game/Prefabs/PF_PauseMenu.prefab`. It has `Resume`, `Res
 
 - `SceneInstaller` wires scene references on `Start()`.
 - `SceneInstaller.pauseMenuController` is an optional scene-instance override. If it is empty, `SceneInstaller` searches under the root Canvas, then instantiates `pauseMenuPrefab`, then falls back to a plain runtime `PauseMenuController`.
+- Player visuals are loaded through `Resources` by `PlayerVisualAutoLoader`; embedded model clips are configured on `PF_Player` and played by `PlayerEmbeddedClipAnimator`. Gameplay should continue to depend on `PlayerMovement`, `PlayerInteractor`, `Rigidbody`, and colliders on `PF_Player`, not on child model names.
 - Static singleton-style access is used by `Inventory`, `CraftingSystem`, `GameOverController`, and `GameAudio`.
 - ScriptableObjects hold data: `ElementDefinition`, `CraftRecipeDatabase`, `GameAudioProfile`.
 - There are no automated gameplay tests. Verify in Unity Editor Play Mode.
